@@ -5,7 +5,7 @@ function Navbar() {
   return (
     <div className={`w-full h-13 bg-white px-4`}>
       <div className={`h-full w-fit flex items-center`}>
-        <img className={`h-5 w-auto`} src={gitAtlasLogo} alt="logo" />
+        <img className={`h-4.5 w-auto`} src={gitAtlasLogo} alt="logo" />
       </div>
     </div>
   );
