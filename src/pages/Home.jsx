@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AiOutlineCode } from "react-icons/ai";
 import { FiArrowRight } from "react-icons/fi";
+import { useNavigate } from "react-router";
 
 const sentenceVariants = {
   hidden: { opacity: 1 },
@@ -29,9 +30,16 @@ const letterVariants = {
 function Home() {
   const line = "See the developer behind the code.";
   const [username, setUsername] = useState(null)
+  const navigate = useNavigate()
+
+  function handleSearchClick(username){
+    if(username){
+      navigate(`/analyzer/${username}`)
+    }
+  }
 
   return (
-    <div className="flex-1 flex flex-col items-center mt-40 md:mt-52 gap-y-9 px-5">
+    <div className="flex flex-col items-center mt-40 md:mt-52 gap-y-9 px-5">
       <motion.h1
         className="text-[1.2rem] md:text-[1.4rem] font-medium font-[georgia] flex items-center"
         variants={sentenceVariants}
@@ -58,7 +66,7 @@ function Home() {
       </motion.h1>
 
       <div
-        className={`w-full md:w-[30rem] lg:w-[40rem] h-fit bg-white border border-gray-200 rounded-sm px-5 py-5`}
+        className={`w-full md:w-[30rem] lg:w-[40rem] h-fit bg-white border border-gray-200 rounded-xl px-5 py-5`}
       >
         <div className={`w-full flex flex-col md:flex-row md:h-10 gap-y-3 md:gap-x-5`}>
           <div className={`relative flex-1`}>
@@ -74,7 +82,8 @@ function Home() {
           </div>
 
           <button
-            className={`group h-10 w-full md:w-30 bg-black text-white flex items-center justify-center gap-x-1`}
+            className={`group h-10 w-full md:w-30 bg-black text-white flex items-center justify-center gap-x-1 active:scale-95 transition-transform ease-in duration-75`}
+            onClick={() => handleSearchClick(username)}
           >
             <p className={`text-sm`}>Search</p>
             <FiArrowRight className={`group-hover:translate-x-2 group-active:translate-x-2 transition-transform ease-in-out duration-200`}/>
