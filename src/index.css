@@ -4,3 +4,17 @@
 * {
   font-family: 'Inter', sans-serif;
 }
+
+::-webkit-scrollbar {
+  width: 3px; /* thinner width */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.4);
+  border-radius: 10px;
+}
