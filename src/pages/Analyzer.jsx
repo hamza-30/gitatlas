@@ -15,14 +15,26 @@ import { MdFilterList } from "react-icons/md";
 import { IoIosSearch } from "react-icons/io";
 import { BiSort } from "react-icons/bi";
 import { RxCross2 } from "react-icons/rx";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
 import RepoCard from "../components/RepoCard";
+import ContributionStatsCard from "../components/ContributionStatsCard";
 
 function Analyzer() {
   const [languageFilter, setLanguageFilter] = useState("");
   const [isFilterDropdown, setIsFilterDropdown] = useState(false);
   const [sortRepo, setSortRepo] = useState("");
   const [isSortRepoDropdown, setIsSortRepoDropdown] = useState(false);
-  const [searchRepo, setSearchRepo] = useState("")
+  const [searchRepo, setSearchRepo] = useState("");
 
   const languageColors = {
     JavaScript: "#f1e05a",
@@ -73,6 +85,30 @@ function Analyzer() {
   ];
 
   const sortList = ["Most stars", "Most forks", "Recently updated"];
+
+  const languageData = [
+    { name: "JavaScript", value: 400 },
+    { name: "Python", value: 300 },
+    { name: "TypeScript", value: 300 },
+    { name: "Go", value: 200 },
+  ];
+
+  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
+
+  const contributionData = [
+    { month: "May", contributions: 15 },
+    { month: "Jun", contributions: 22 },
+    { month: "Jul", contributions: 18 },
+    { month: "Aug", contributions: 30 },
+    { month: "Sep", contributions: 25 },
+    { month: "Oct", contributions: 40 },
+    { month: "Nov", contributions: 35 },
+    { month: "Dec", contributions: 20 },
+    { month: "Jan", contributions: 28 },
+    { month: "Feb", contributions: 32 },
+    { month: "Mar", contributions: 45 },
+    { month: "Apr", contributions: 50 },
+  ];
 
   return (
     <div className={`flex flex-col items-center px-4 md:px-9 lg:px-20 gap-y-9`}>
@@ -165,14 +201,42 @@ function Analyzer() {
 
       {/* Language & Repositories */}
       <div
-        className={`w-full flex flex-col rounded-sm lg:flex-row h-[27rem] mb-10 gap-y-9 md:gap-x-9`}
+        className={`w-full flex flex-col rounded-sm lg:flex-row lg:h-[27rem] gap-y-9 md:gap-x-9`}
       >
         <div
-          className={`flex flex-col h-fit lg:h-full px-4 py-4 lg:w-[30%] bg-white gap-y-6 border border-gray-100`}
+          className={`flex flex-col max-h-fit lg:h-full px-4 py-4 lg:w-[30%] bg-white gap-y-6 border border-gray-100`}
         >
           <div className={`text-lg font-semibold`}>Languages</div>
-          <div className={`flex justify-center`}>
-            <div className={`border w-35 h-35 rounded-full`}></div>
+          <div className={`flex justify-center w-full h-[9rem] lg:h-[19rem]`}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={languageData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50} // This creates the "donut" hole
+                  outerRadius={70} // This determines the total size
+                  paddingAngle={3} // Adds a tiny gap between slices for a modern look
+                  dataKey="value"
+                  stroke="none" // Removes the default border around slices
+                >
+                  {languageData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    fontSize: "14px",
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
           <div className={`h-full lg:overflow-scroll flex flex-col gap-y-3`}>
             <LanguageInfo />
@@ -214,9 +278,9 @@ function Analyzer() {
                   className={`p-0.5  rounded-xs relative left-3 text-white hover:bg-[#757474]
                 ${languageFilter ? "block" : "hidden"}`}
                   onClick={(e) => {
-                    e.stopPropagation()
-                    setLanguageFilter("")
-                    setIsFilterDropdown(false)
+                    e.stopPropagation();
+                    setLanguageFilter("");
+                    setIsFilterDropdown(false);
                   }}
                 >
                   <RxCross2 />
@@ -253,9 +317,9 @@ function Analyzer() {
                   className={`p-0.5 rounded-xs relative left-3 text-white hover:bg-[#757474]
                 ${sortRepo ? "absolute" : "hidden"}`}
                   onClick={(e) => {
-                    e.stopPropagation()
-                    setSortRepo("")
-                    setIsSortRepoDropdown(false)
+                    e.stopPropagation();
+                    setSortRepo("");
+                    setIsSortRepoDropdown(false);
                   }}
                 >
                   <RxCross2 />
@@ -291,6 +355,55 @@ function Analyzer() {
         </div>
       </div>
       {/* Language & Repositories */}
+
+      {/* Contribution Activity */}
+      <div
+        className={`min-h-fit w-full flex flex-col gap-y-4 mb-10 px-4 py-4 rounded-sm bg-white border border-gray-100`}
+      >
+        <div className={`text-lg font-semibold`}>Contribution Activity</div>
+
+        <div className={`h-60`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={contributionData}>
+              {/* Hiding the axis lines/ticks for a cleaner, modern UI */}
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#6B7280", fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis
+                hide={true} 
+              />
+              <Tooltip
+                cursor={{ fill: "#F3F4F6" }}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "none",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                }}
+              />
+              <Bar
+                dataKey="contributions"
+                fill="#2da54e"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className={`flex flex-wrap gap-x-5 gap-y-3`}>
+          <ContributionStatsCard title={"MOST ACTIVE DAY"} data={"Wednesday"} />
+          <ContributionStatsCard title={"MOST ACTIVE MONTH"} data={"June"} />
+          <ContributionStatsCard title={"CURRENT STREAK"} data={"14 days"} />
+          <ContributionStatsCard
+            title={"TOTAL CONTRIBUTIONS"}
+            data={"1842 (last year)"}
+          />
+        </div>
+      </div>
+      {/* Contribution Activity */}
     </div>
   );
 }
