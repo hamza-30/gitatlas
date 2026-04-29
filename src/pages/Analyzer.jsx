@@ -191,8 +191,10 @@ function Analyzer() {
 
   let languageUsageFrequency = {};
   for (const repo of repoData) {
-    languageUsageFrequency[repo.language] =
-      (languageUsageFrequency[repo.language] || 0) + 1;
+    if (repo.language) {
+      languageUsageFrequency[repo.language] =
+        (languageUsageFrequency[repo.language] || 0) + 1;
+    }
   }
 
   let languageUsagePieData = [
@@ -202,10 +204,12 @@ function Analyzer() {
     })),
   ];
 
+  let reposWithLanguage = repoData.filter((repo) => repo.language)
+
   let languageUsagePercentage = languageUsagePieData.map((lang) => ({
     language: lang.name,
-    percentage: ((lang.value / repoData.length) * 100).toFixed(1),
-  }));
+    percentage: ((lang.value / reposWithLanguage.length) * 100).toFixed(1),
+  })).sort((a , b) => b.percentage - a.percentage)
 
   let filteredRepoData = repoData.filter((repo) => {
     let filteredByLanguage = repo.language == languageFilter || !languageFilter;
