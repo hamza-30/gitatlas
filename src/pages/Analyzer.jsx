@@ -166,8 +166,10 @@ function Analyzer() {
     })),
   ];
 
-  let languageUsagePercentage = languageUsagePieData.map((lang) => ({language: lang.name, percentage: ((lang.value / repoData.length) * 100).toFixed(1)}))
-  console.log(languageUsagePieData);
+  let languageUsagePercentage = languageUsagePieData.map((lang) => ({
+    language: lang.name,
+    percentage: ((lang.value / repoData.length) * 100).toFixed(1),
+  }));
 
   return (
     <div className={`flex flex-col items-center px-4 md:px-9 lg:px-20 gap-y-9`}>
@@ -332,10 +334,14 @@ function Analyzer() {
             </ResponsiveContainer>
           </div>
           <div className={`h-full lg:overflow-scroll flex flex-col gap-y-3`}>
-            {languageUsagePercentage.map((lang) => (
-              <LanguageInfo language={lang.language} percentage={lang.percentage} color={languageColors[lang.language]}/>
-            ))
-            }
+            {languageUsagePercentage.map((lang, index) => (
+              <LanguageInfo
+                key={index}
+                language={lang.language}
+                percentage={lang.percentage}
+                color={languageColors[lang.language]}
+              />
+            ))}
           </div>
         </div>
 
@@ -380,19 +386,18 @@ function Analyzer() {
                 </div>
 
                 <div
-                  className={`h-26 w-fit bg-white top-7.5 left-0 rounded-sm border border-gray-200 overflow-y-scroll z-10
+                  className={`h-fit max-h-26 w-fit bg-white top-7.5 left-0 rounded-sm border border-gray-200 overflow-y-scroll z-10
                   ${isFilterDropdown ? "absolute" : "hidden"}`}
                 >
-                  {githubLanguages.length !== 0 &&
-                    githubLanguages.map((lang) => (
-                      <div
-                        key={lang}
-                        className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] hover:text-white`}
-                        onClick={() => setLanguageFilter(lang)}
-                      >
-                        {lang}
-                      </div>
-                    ))}
+                  {languageUsagePercentage.map((lang, index) => (
+                    <div
+                      key={index}
+                      className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] hover:text-white`}
+                      onClick={() => setLanguageFilter(lang.language)}
+                    >
+                      {lang.language}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -440,10 +445,17 @@ function Analyzer() {
           <div
             className={`h-full flex gap-x-4 flex-wrap gap-y-4 lg:overflow-scroll`}
           >
-            <RepoCard />
-            <RepoCard />
-            <RepoCard />
-            <RepoCard />
+            {repoData.length && repoData.map((repo, index) => (
+              <RepoCard 
+              key={index}
+              repoName={repo.name}
+              description={repo.description}
+              language={repo.language}
+              languageColor={languageColors[repo.language]}
+              starsCount={repo.stargazers_count}
+              forksCount={repo.forks_count}
+              username={username}/>
+            ))}
           </div>
         </div>
       </div>
