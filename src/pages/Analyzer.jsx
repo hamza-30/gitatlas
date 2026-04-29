@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import { HiOutlineLocationMarker } from "react-icons/hi";
 import { HiOutlineOfficeBuilding } from "react-icons/hi";
@@ -28,6 +28,8 @@ import {
 } from "recharts";
 import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
+import { useParams } from "react-router";
+import { div } from "framer-motion/client";
 
 function Analyzer() {
   const [languageFilter, setLanguageFilter] = useState("");
@@ -35,6 +37,9 @@ function Analyzer() {
   const [sortRepo, setSortRepo] = useState("");
   const [isSortRepoDropdown, setIsSortRepoDropdown] = useState(false);
   const [searchRepo, setSearchRepo] = useState("");
+  const { username } = useParams();
+  const [profileData, setProfileData] = useState(null);
+  const [repoData, setRepoData] = useState([]);
 
   const languageColors = {
     JavaScript: "#f1e05a",
@@ -86,15 +91,6 @@ function Analyzer() {
 
   const sortList = ["Most stars", "Most forks", "Recently updated"];
 
-  const languageData = [
-    { name: "JavaScript", value: 400 },
-    { name: "Python", value: 300 },
-    { name: "TypeScript", value: 300 },
-    { name: "Go", value: 200 },
-  ];
-
-  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-
   const contributionData = [
     { month: "May", contributions: 15 },
     { month: "Jun", contributions: 22 },
@@ -110,6 +106,69 @@ function Analyzer() {
     { month: "Apr", contributions: 50 },
   ];
 
+  useEffect(() => {
+    async function getUserProfile() {
+      try {
+        let [profileResult, repoResult] = await Promise.all([
+          fetch(`https://api.github.com/users/${username}`),
+          fetch(
+            `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
+          ),
+        ]);
+
+        let profileData = await profileResult.json();
+        let repoData = await repoResult.json();
+
+        setProfileData(profileData);
+        setRepoData(repoData);
+      } catch (error) {
+        console.log("Error fetching data");
+      }
+    }
+
+    getUserProfile();
+  }, [username]);
+
+  if (!profileData) {
+    return <div>Loading...</div>;
+  }
+
+  console.log(profileData);
+  console.log(repoData);
+
+  let joinedDate = "";
+  if (profileData) {
+    joinedDate = new Date(profileData.created_at).toDateString().split(" ");
+    joinedDate =
+      joinedDate.slice(1, 3).join(" ") + ", " + joinedDate.slice(3).join(" ");
+  }
+
+  let totalStars = repoData
+    .reduce((acc, repo) => acc + repo.stargazers_count, 0)
+    .toLocaleString();
+  let totalForks = repoData
+    .reduce((acc, repo) => acc + repo.forks_count, 0)
+    .toLocaleString();
+  let totalLanguages = new Set(
+    repoData.map((repo) => repo.language).filter(Boolean),
+  ).size;
+
+  let languageUsageFrequency = {};
+  for (const repo of repoData) {
+    languageUsageFrequency[repo.language] =
+      (languageUsageFrequency[repo.language] || 0) + 1;
+  }
+
+  let languageUsagePieData = [
+    ...Object.entries(languageUsageFrequency).map((lang) => ({
+      name: lang[0],
+      value: lang[1],
+    })),
+  ];
+
+  let languageUsagePercentage = languageUsagePieData.map((lang) => ({language: lang.name, percentage: ((lang.value / repoData.length) * 100).toFixed(1)}))
+  console.log(languageUsagePieData);
+
   return (
     <div className={`flex flex-col items-center px-4 md:px-9 lg:px-20 gap-y-9`}>
       {/* Profile Overview */}
@@ -118,70 +177,96 @@ function Analyzer() {
       >
         <div className={`w-full flex flex-col md:flex-row gap-x-8 flex-wrap`}>
           <div
-            className={`h-35 w-35 border border-gray-200 rounded-full mb-4 md:mb-0`}
+            className={`h-35 w-35 border border-gray-200 rounded-full mb-4 md:mb-0 overflow-clip`}
           >
-            {/* image here */}
+            <img
+              src={profileData.avatar_url}
+              alt="profile photo"
+              className={`h-fit w-fit`}
+            />
           </div>
 
           <div className={`flex-1 flex flex-col`}>
             <div className={`flex justify-between flex-row flex-wrap`}>
               <div className={`mb-3`}>
-                <h2 className={`text-[1.5rem] font-medium`}>Linus Torvalds</h2>
-                <span className={`text-gray-500 text-sm`}>@torvalds</span>
+                <h2 className={`text-[1.5rem] font-medium`}>
+                  {profileData.name}
+                </h2>
+                <span className={`text-gray-500 text-sm`}>
+                  @{profileData.login}
+                </span>
               </div>
 
               <button
                 className={`mb-3 md:mb-0 max-w-33 flex items-center gap-x-1 bg-[#252525] hover:bg-[#252525c7] h-fit px-3 py-1 text-white rounded-sm mt-[4.5px]`}
               >
                 <FaExternalLinkAlt className={`text-xs`} />
-                <a href={``} className={`text-[0.8rem]`}>
+                <a
+                  href={`https://www.github.com/${username}`}
+                  className={`text-[0.8rem]`}
+                >
                   View on GitHub
                 </a>
               </button>
             </div>
 
-            <div className={`text-[#313131] border-b border-gray-300 pb-4`}>
-              Senior Full-Stack Engineer focused on developer tools and
-              performance. Building scalable systems and writing about
-              engineering patterns. Core contributor to several open-source
-              frameworks.
+            <div
+              className={`text-[#313131] border-b border-gray-300
+              ${profileData.bio ? "pb-4" : "pb-0"}`}
+            >
+              {profileData.bio}
             </div>
 
             <div className={`flex pt-3 gap-x-3.5 flex-wrap gap-y-2`}>
-              <span className={`flex items-center gap-x-0.5`}>
-                <HiOutlineLocationMarker className={`text-lg`} />
-                <p className={`text-[0.8rem] text-gray-700`}>
-                  San Francisco, CA
-                </p>
-              </span>
+              {profileData.location && (
+                <span className={`flex items-center gap-x-0.5`}>
+                  <HiOutlineLocationMarker className={`text-lg`} />
+                  <p className={`text-[0.8rem] text-gray-700`}>
+                    {profileData.location}
+                  </p>
+                </span>
+              )}
 
-              <span className={`flex items-center gap-x-0.5`}>
-                <HiOutlineOfficeBuilding className={`text-base`} />
-                <p className={`text-[0.8rem] text-gray-700`}>Acme Corp</p>
-              </span>
+              {profileData.company && (
+                <span className={`flex items-center gap-x-0.5`}>
+                  <HiOutlineOfficeBuilding className={`text-base`} />
+                  <p className={`text-[0.8rem] text-gray-700`}>
+                    {profileData.company}
+                  </p>
+                </span>
+              )}
 
-              <span className={`flex items-center gap-x-0.5`}>
-                <IoMdCalendar className={`text-lg`} />
-                <p className={`text-[0.8rem] text-gray-700`}>
-                  Joined Sep, 2018
-                </p>
-              </span>
+              {profileData.created_at && (
+                <span className={`flex items-center gap-x-0.5`}>
+                  <IoMdCalendar className={`text-lg`} />
+                  <p className={`text-[0.8rem] text-gray-700`}>{joinedDate}</p>
+                </span>
+              )}
 
-              <span className={`flex items-center gap-x-0.5`}>
-                <MdOutlinePeopleAlt className={`text-lg`} />
-                <p className={`text-[0.8rem] text-gray-700`}>
-                  {" "}
-                  <span className={`font-semibold`}>1.2k</span> Followers
-                </p>
-              </span>
+              {profileData.followers && (
+                <span className={`flex items-center gap-x-0.5`}>
+                  <MdOutlinePeopleAlt className={`text-lg`} />
+                  <p className={`text-[0.8rem] text-gray-700`}>
+                    <span className={`font-semibold`}>
+                      {profileData.followers.toLocaleString()}
+                    </span>{" "}
+                    Followers
+                  </p>
+                </span>
+              )}
 
-              <span className={`flex items-center gap-x-0.5`}>
-                <MdOutlinePersonAdd className={`text-lg`} />
-                <p className={`text-[0.8rem] text-gray-700`}>
-                  {" "}
-                  <span className={`font-semibold`}>145</span> Following
-                </p>
-              </span>
+              {profileData.following >= 0 && (
+                <span className={`flex items-center gap-x-0.5`}>
+                  <MdOutlinePersonAdd className={`text-lg`} />
+                  <p className={`text-[0.8rem] text-gray-700`}>
+                    {" "}
+                    <span className={`font-semibold`}>
+                      {profileData.following.toLocaleString()}
+                    </span>{" "}
+                    Following
+                  </p>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -192,10 +277,18 @@ function Analyzer() {
       <div
         className={`w-full min-h-fit flex flex-col md:flex-row gap-y-3 md:gap-x-4`}
       >
-        <StatsCard title={`TOTAL STARS`} icon={IoMdStarOutline} data={8432} />
-        <StatsCard title={`FORKS`} icon={PiGitFork} data={1204} />
-        <StatsCard title={`REPOSITORIES`} icon={VscRepo} data={64} />
-        <StatsCard title={`LANGUAGES`} icon={IoIosCode} data={12} />
+        <StatsCard
+          title={`TOTAL STARS`}
+          icon={IoMdStarOutline}
+          data={totalStars}
+        />
+        <StatsCard title={`FORKS`} icon={PiGitFork} data={totalForks} />
+        <StatsCard
+          title={`REPOSITORIES`}
+          icon={VscRepo}
+          data={repoData.length}
+        />
+        <StatsCard title={`LANGUAGES`} icon={IoIosCode} data={totalLanguages} />
       </div>
       {/* Stats Cards */}
 
@@ -211,7 +304,7 @@ function Analyzer() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={languageData}
+                  data={languageUsagePieData}
                   cx="50%"
                   cy="50%"
                   innerRadius={50} // This creates the "donut" hole
@@ -220,10 +313,10 @@ function Analyzer() {
                   dataKey="value"
                   stroke="none" // Removes the default border around slices
                 >
-                  {languageData.map((entry, index) => (
+                  {languageUsagePieData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={languageColors[entry.name] || "#ccc"}
                     />
                   ))}
                 </Pie>
@@ -239,10 +332,10 @@ function Analyzer() {
             </ResponsiveContainer>
           </div>
           <div className={`h-full lg:overflow-scroll flex flex-col gap-y-3`}>
-            <LanguageInfo />
-            <LanguageInfo />
-            <LanguageInfo />
-            <LanguageInfo />
+            {languageUsagePercentage.map((lang) => (
+              <LanguageInfo language={lang.language} percentage={lang.percentage} color={languageColors[lang.language]}/>
+            ))
+            }
           </div>
         </div>
 
@@ -373,9 +466,7 @@ function Analyzer() {
                 tick={{ fill: "#6B7280", fontSize: 12 }}
                 dy={10}
               />
-              <YAxis
-                hide={true} 
-              />
+              <YAxis hide={true} />
               <Tooltip
                 cursor={{ fill: "#F3F4F6" }}
                 contentStyle={{
