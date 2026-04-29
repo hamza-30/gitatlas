@@ -171,6 +171,19 @@ function Analyzer() {
     percentage: ((lang.value / repoData.length) * 100).toFixed(1),
   }));
 
+  let filteredRepoData = repoData.filter((repo) => {
+    let filteredByLanguage = repo.language == languageFilter || !languageFilter
+
+    return filteredByLanguage
+  })
+
+  if(sortRepo == "Most stars"){
+    filteredRepoData = filteredRepoData.sort((a , b) => b.stargazers_count - a.stargazers_count)
+  }
+  else if(sortRepo == "Most forks"){
+    filteredRepoData = filteredRepoData.sort((a , b) => b.forks_count - a.forks_count)
+  }
+
   return (
     <div className={`flex flex-col items-center px-4 md:px-9 lg:px-20 gap-y-9`}>
       {/* Profile Overview */}
@@ -445,7 +458,7 @@ function Analyzer() {
           <div
             className={`h-full flex gap-x-4 flex-wrap gap-y-4 lg:overflow-scroll`}
           >
-            {repoData.length && repoData.map((repo, index) => (
+            {filteredRepoData.length && filteredRepoData.map((repo, index) => (
               <RepoCard 
               key={index}
               repoName={repo.name}
