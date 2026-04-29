@@ -31,6 +31,45 @@ import ContributionStatsCard from "../components/ContributionStatsCard";
 import { useParams } from "react-router";
 import { div } from "framer-motion/client";
 
+function convertToUpdatedAgoTime(date) {
+  let today = new Date();
+  let repoDate = new Date(date);
+
+  let diffInSeconds = Math.floor((today - repoDate) / 1000);
+
+  const years = Math.floor(diffInSeconds / 31536000);
+  if (years >= 1) {
+    return years > 1 ? `${years} years ago` : `${years} year ago`;
+  }
+
+  const months = Math.floor(diffInSeconds / 2592000);
+  if (months >= 1) {
+    return months > 1 ? `${months} months ago` : `${months} month ago`;
+  }
+
+  const weeks = Math.floor(diffInSeconds / 604800);
+  if (weeks >= 1) {
+    return weeks > 1 ? `${weeks} weeks ago` : `${weeks} week ago`;
+  }
+
+  const days = Math.floor(diffInSeconds / 86400);
+  if (days >= 1) {
+    return days > 1 ? `${days} days ago` : `${days} day ago`;
+  }
+
+  const hours = Math.floor(diffInSeconds / 3600);
+  if (hours >= 1) {
+    return hours > 1 ? `${hours} hours ago` : `${hours} hour ago`;
+  }
+
+  const minutes = Math.floor(diffInSeconds / 60);
+  if (minutes >= 1) {
+    return minutes > 1 ? `${minutes} minutes ago` : `${minutes} minute ago`;
+  }
+
+  return `just now`;
+}
+
 function Analyzer() {
   const [languageFilter, setLanguageFilter] = useState("");
   const [isFilterDropdown, setIsFilterDropdown] = useState(false);
@@ -133,9 +172,6 @@ function Analyzer() {
     return <div>Loading...</div>;
   }
 
-  console.log(profileData);
-  console.log(repoData);
-
   let joinedDate = "";
   if (profileData) {
     joinedDate = new Date(profileData.created_at).toDateString().split(" ");
@@ -172,16 +208,25 @@ function Analyzer() {
   }));
 
   let filteredRepoData = repoData.filter((repo) => {
-    let filteredByLanguage = repo.language == languageFilter || !languageFilter
+    let filteredByLanguage = repo.language == languageFilter || !languageFilter;
+    let searchedByName =
+      repo.name.toLowerCase().includes(searchRepo.toLowerCase()) || !searchRepo;
 
-    return filteredByLanguage
-  })
+    return filteredByLanguage && searchedByName;
+  });
 
-  if(sortRepo == "Most stars"){
-    filteredRepoData = filteredRepoData.sort((a , b) => b.stargazers_count - a.stargazers_count)
-  }
-  else if(sortRepo == "Most forks"){
-    filteredRepoData = filteredRepoData.sort((a , b) => b.forks_count - a.forks_count)
+  if (sortRepo == "Most stars") {
+    filteredRepoData = filteredRepoData.sort(
+      (a, b) => b.stargazers_count - a.stargazers_count,
+    );
+  } else if (sortRepo == "Most forks") {
+    filteredRepoData = filteredRepoData.sort(
+      (a, b) => b.forks_count - a.forks_count,
+    );
+  } else if (sortRepo == "Recently updated") {
+    filteredRepoData = filteredRepoData.sort(
+      (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
+    );
   }
 
   return (
@@ -458,17 +503,23 @@ function Analyzer() {
           <div
             className={`h-full flex gap-x-4 flex-wrap gap-y-4 lg:overflow-scroll`}
           >
-            {filteredRepoData.length && filteredRepoData.map((repo, index) => (
-              <RepoCard 
-              key={index}
-              repoName={repo.name}
-              description={repo.description}
-              language={repo.language}
-              languageColor={languageColors[repo.language]}
-              starsCount={repo.stargazers_count}
-              forksCount={repo.forks_count}
-              username={username}/>
-            ))}
+            {filteredRepoData.length > 0 ? (
+              filteredRepoData.map((repo, index) => (
+                <RepoCard
+                  key={index}
+                  repoName={repo.name}
+                  description={repo.description}
+                  language={repo.language}
+                  languageColor={languageColors[repo.language]}
+                  starsCount={repo.stargazers_count}
+                  forksCount={repo.forks_count}
+                  updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
+                  username={username}
+                />
+              ))
+            ) : (
+              <div>No repo found, try refining search</div>
+            )}
           </div>
         </div>
       </div>
