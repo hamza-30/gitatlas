@@ -32,6 +32,7 @@ import { PiChartBar } from "react-icons/pi";
 import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
 import { useParams } from "react-router";
+import { useSearchContext } from "../context/SearchContextProvider";
 
 function convertToUpdatedAgoTime(date) {
   let today = new Date();
@@ -84,6 +85,7 @@ function Analyzer() {
   const [contributionData, setContributionData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const { recentSearches, setRecentSearches } = useSearchContext();
 
   const languageColors = {
     JavaScript: "#f1e05a",
@@ -138,6 +140,16 @@ function Analyzer() {
         setProfileData(profileData);
         setRepoData(repoData);
         setContributionData(contributionData);
+
+        let searches = JSON.parse(localStorage.getItem("searches")) || [];
+        searches = searches.filter((searchName) => searchName !== username)
+        searches.unshift(username);
+
+        if (searches.length > 5) {
+          searches.pop();
+        }
+        setRecentSearches(searches);
+        localStorage.setItem("searches", JSON.stringify(searches));
       } catch (error) {
         setError(true);
         console.log("Error fetching data", error);

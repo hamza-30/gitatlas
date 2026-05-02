@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AiOutlineCode } from "react-icons/ai";
 import { FiArrowRight } from "react-icons/fi";
-import { useNavigate } from "react-router";
+import { useAsyncError, useNavigate } from "react-router";
+import RecentSearch from "../components/RecentSearch";
+import { useSearchContext } from "../context/SearchContextProvider";
 
 const sentenceVariants = {
   hidden: { opacity: 1 },
@@ -29,12 +31,14 @@ const letterVariants = {
 
 function Home() {
   const line = "See the developer behind the code.";
-  const [username, setUsername] = useState(null)
-  const navigate = useNavigate()
+  const [username, setUsername] = useState(null);
+  const { recentSearches } = useSearchContext();
+  const [showRecentSearchBox, setShowRecentSearchBox] = useState(false);
+  const navigate = useNavigate();
 
-  function handleSearchClick(username){
-    if(username){
-      navigate(`/analyzer/${username}`)
+  function handleSearchClick(username) {
+    if (username) {
+      navigate(`/analyzer/${username}`);
     }
   }
 
@@ -66,15 +70,21 @@ function Home() {
       </motion.h1>
 
       <div
-        className={`w-full md:w-[30rem] lg:w-[40rem] h-fit bg-white border border-gray-200 rounded-xl px-5 py-5`}
+        className={`relative w-full md:w-[30rem] lg:w-[40rem] h-fit bg-white border border-gray-200 rounded-xl px-5 py-5`}
       >
-        <div className={`w-full flex flex-col md:flex-row md:h-10 gap-y-3 md:gap-x-5`}>
+        <div
+          className={`w-full flex flex-col md:flex-row md:h-10 gap-y-3 md:gap-x-5`}
+        >
           <div className={`relative flex-1`}>
             <input
               className={`border border-gray-200 h-10 outline-none focus:border-transparent focus:ring-1 w-full pl-10 text-sm transition-all ease-in-out duration-150`}
               type="text"
               placeholder="Enter a GitHub username"
               onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => setShowRecentSearchBox(true)}
+              onBlur={() =>
+                setTimeout(() => setShowRecentSearchBox(false), 150)
+              }
             />
             <AiOutlineCode
               className={`absolute text-2xl left-2 bottom-[0.47rem]`}
@@ -86,9 +96,22 @@ function Home() {
             onClick={() => handleSearchClick(username)}
           >
             <p className={`text-sm`}>Search</p>
-            <FiArrowRight className={`group-hover:translate-x-2 group-active:translate-x-2 transition-transform ease-in-out duration-200`}/>
+            <FiArrowRight
+              className={`group-hover:translate-x-2 group-active:translate-x-2 transition-transform ease-in-out duration-200`}
+            />
           </button>
         </div>
+
+        {recentSearches.length > 0 && (
+          <div
+            className={`left-0 top-20.5 h-fit w-full md:w-[30rem] lg:w-[40rem] bg-white rounded-xl overflow-clip
+          ${showRecentSearchBox ? "absolute" : "hidden"}`}
+          >
+            {recentSearches.map((search) => (
+              <RecentSearch username={search} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
