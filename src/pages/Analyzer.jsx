@@ -82,6 +82,8 @@ function Analyzer() {
   const [profileData, setProfileData] = useState(null);
   const [repoData, setRepoData] = useState([]);
   const [contributionData, setContributionData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const languageColors = {
     JavaScript: "#f1e05a",
@@ -113,6 +115,8 @@ function Analyzer() {
   useEffect(() => {
     async function getUserProfile() {
       try {
+        setLoading(true);
+        setError(false);
         let [profileResult, repoResult, eventsResult] = await Promise.all([
           fetch(`https://api.github.com/users/${username}`),
           fetch(
@@ -123,6 +127,10 @@ function Analyzer() {
           ),
         ]);
 
+        if (!profileResult.ok || !repoResult.ok || !eventsResult.ok) {
+          throw new Error("Failed to fetch");
+        }
+
         let profileData = await profileResult.json();
         let repoData = await repoResult.json();
         let contributionData = await eventsResult.json();
@@ -130,25 +138,46 @@ function Analyzer() {
         setProfileData(profileData);
         setRepoData(repoData);
         setContributionData(contributionData);
-        console.log(contributionData);
       } catch (error) {
-        console.log("Error fetching data");
+        setError(true);
+        console.log("Error fetching data", error);
+      } finally {
+        setLoading(false);
       }
     }
 
     getUserProfile();
   }, [username]);
 
-  if (!profileData) {
-    return <div>Loading...</div>;
+  if (error) {
+    return (
+      <div
+        className={`h-[calc(100vh-52px)] flex-1 flex flex-col justify-center items-center px-4 pb-20`}
+      >
+        <p className={`text-sm text-gray-600`}>
+          {"Could not load profile. Please check the username and try again :("}
+        </p>
+      </div>
+    );
+  }
+
+  if (loading || !profileData) {
+    return (
+      <div
+        className={`h-[calc(100vh-52px)] flex-1 flex flex-col justify-center items-center gap-y-2 pb-20`}
+      >
+        <div
+          className={`h-10 w-10 rounded-full border-4 border-gray-300 border-t-black animate-spin ease-in`}
+        ></div>
+        <p className={`text-sm text-gray-600`}>Loading</p>
+      </div>
+    );
   }
 
   let joinedDate = "";
-  if (profileData) {
-    joinedDate = new Date(profileData.created_at).toDateString().split(" ");
-    joinedDate =
-      joinedDate.slice(1, 3).join(" ") + ", " + joinedDate.slice(3).join(" ");
-  }
+  joinedDate = new Date(profileData.created_at).toDateString().split(" ");
+  joinedDate =
+    joinedDate.slice(1, 3).join(" ") + ", " + joinedDate.slice(3).join(" ");
 
   let totalStars = repoData
     .reduce((acc, repo) => acc + repo.stargazers_count, 0)
@@ -238,10 +267,10 @@ function Analyzer() {
   }
   mostActiveDay = new Date(mostActiveDay).toLocaleDateString("en-US", {
     weekday: "long",
-  })
+  });
 
-  if(mostActiveDay == "Invalid Date"){
-    mostActiveDay = "None"
+  if (mostActiveDay == "Invalid Date") {
+    mostActiveDay = "None";
   }
 
   frequency = 0;
@@ -258,8 +287,8 @@ function Analyzer() {
     }
   }
 
-  if(!mostActiveMonth){
-    mostActiveMonth = "None"
+  if (!mostActiveMonth) {
+    mostActiveMonth = "None";
   }
 
   let contributionsBarChartData = [
@@ -312,7 +341,7 @@ function Analyzer() {
 
             <div
               className={`text-[#313131] border-b border-gray-300
-              ${profileData.bio ? "pb-4" : "pb-0"}`}
+                ${profileData.bio ? "pb-4" : "pb-0"}`}
             >
               {profileData.bio}
             </div>
@@ -448,7 +477,7 @@ function Analyzer() {
 
           <div
             className={`h-[10rem] lg:h-[27rem] flex flex-col gap-y-1 justify-center items-center text-[#737373] mb-6
-            ${languageUsagePieData.length == 0 ? "block" : "hidden"}`}
+              ${languageUsagePieData.length == 0 ? "block" : "hidden"}`}
           >
             <PiFolderOpen className={`text-[2.5rem]`} />
             <p className={`text-sm`}>No language found</p>
@@ -473,7 +502,7 @@ function Analyzer() {
 
               <div
                 className={`h-full flex justify-center items-center px-5 border border-gray-200 gap-x-1 cursor-pointer relative
-                  ${languageFilter ? "bg-black text-white" : "bg-white text-[#3a3a3a] hover:bg-gray-100 active:bg-gray-100"}`}
+                    ${languageFilter ? "bg-black text-white" : "bg-white text-[#3a3a3a] hover:bg-gray-100 active:bg-gray-100"}`}
                 onClick={() => setIsFilterDropdown(!isFilterDropdown)}
               >
                 <MdFilterList
@@ -485,7 +514,7 @@ function Analyzer() {
 
                 <div
                   className={`p-0.5  rounded-xs relative left-3 text-white hover:bg-[#757474]
-                ${languageFilter ? "block" : "hidden"}`}
+                  ${languageFilter ? "block" : "hidden"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setLanguageFilter("");
@@ -497,7 +526,7 @@ function Analyzer() {
 
                 <div
                   className={`h-fit max-h-26 w-fit bg-white top-7.5 left-0 rounded-sm border border-gray-200 overflow-y-scroll z-10
-                  ${isFilterDropdown ? "absolute" : "hidden"}`}
+                    ${isFilterDropdown ? "absolute" : "hidden"}`}
                 >
                   {languageUsagePercentage.map((lang, index) => (
                     <div
@@ -513,7 +542,7 @@ function Analyzer() {
 
               <div
                 className={`relative h-full flex justify-center items-center px-5 border border-gray-200 gap-x-1 cursor-pointer
-                  ${sortRepo ? "bg-black text-white" : "bg-white text-[#3a3a3a] hover:bg-gray-100 active:bg-gray-100"}`}
+                    ${sortRepo ? "bg-black text-white" : "bg-white text-[#3a3a3a] hover:bg-gray-100 active:bg-gray-100"}`}
                 onClick={() => setIsSortRepoDropdown(!isSortRepoDropdown)}
               >
                 <BiSort className={`${sortRepo ? "lg:hidden" : "block"}`} />
@@ -523,7 +552,7 @@ function Analyzer() {
 
                 <div
                   className={`p-0.5 rounded-xs relative left-3 text-white hover:bg-[#757474]
-                ${sortRepo ? "absolute" : "hidden"}`}
+                  ${sortRepo ? "absolute" : "hidden"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSortRepo("");
@@ -535,7 +564,7 @@ function Analyzer() {
 
                 <div
                   className={`min-w-33 top-7.5 right-0 min-h-fit bg-white rounded-sm border border-gray-200 z-10
-                  ${isSortRepoDropdown ? "absolute" : "hidden"}`}
+                    ${isSortRepoDropdown ? "absolute" : "hidden"}`}
                 >
                   {sortList.map((sortBy) => (
                     <div
@@ -574,7 +603,7 @@ function Analyzer() {
 
           <div
             className={`${filteredRepoData.length > 0 ? "hidden" : "block"}
-           h-44 lg:flex-1 flex flex-col gap-y-1.5 items-center justify-center text-[#737373] mb-3.5`}
+            h-44 lg:flex-1 flex flex-col gap-y-1.5 items-center justify-center text-[#737373] mb-3.5`}
           >
             <GoRepoTemplate className={`text-[2.5rem]`} />
             <p className={`text-sm`}>we looked, no repo here!</p>
@@ -595,39 +624,41 @@ function Analyzer() {
         </div>
 
         <div className={`h-60`}>
-          {contributionsBarChartData.length > 0 ? 
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={contributionsBarChartData}>
-              {/* Hiding the axis lines/ticks for a cleaner, modern UI */}
-              <XAxis
-                dataKey="date"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "#6B7280", fontSize: 12 }}
-                dy={10}
-              />
-              <YAxis hide={true} />
-              <Tooltip
-                cursor={{ fill: "#F3F4F6" }}
-                contentStyle={{
-                  borderRadius: "8px",
-                  border: "none",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                }}
-              />
-              <Bar
-                dataKey="contributions"
-                fill="#2da54e"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-          :
-          <div className={`h-full flex flex-col items-center justify-center gap-y-1.5 text-[#737373] mb-3.5`}>
-            <PiChartBar className={`text-[2.7rem]`}/>
-            <p className={`text-sm`}>Looks like things are taking a break</p>
-          </div>
-          }
+          {contributionsBarChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={contributionsBarChartData}>
+                {/* Hiding the axis lines/ticks for a cleaner, modern UI */}
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis hide={true} />
+                <Tooltip
+                  cursor={{ fill: "#F3F4F6" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
+                />
+                <Bar
+                  dataKey="contributions"
+                  fill="#2da54e"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div
+              className={`h-full flex flex-col items-center justify-center gap-y-1.5 text-[#737373] mb-3.5`}
+            >
+              <PiChartBar className={`text-[2.7rem]`} />
+              <p className={`text-sm`}>Looks like things are taking a break</p>
+            </div>
+          )}
         </div>
 
         <div className={`flex flex-wrap gap-x-5 gap-y-3`}>
