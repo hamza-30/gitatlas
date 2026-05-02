@@ -14,6 +14,7 @@ import LanguageInfo from "../components/LanguageInfo";
 import { MdFilterList } from "react-icons/md";
 import { IoIosSearch } from "react-icons/io";
 import { BiSort } from "react-icons/bi";
+import { GoRepoTemplate } from "react-icons/go";
 import { RxCross2 } from "react-icons/rx";
 import {
   PieChart,
@@ -26,10 +27,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { PiFolderOpen } from "react-icons/pi";
+import { PiChartBar } from "react-icons/pi";
 import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
 import { useParams } from "react-router";
-import { div } from "framer-motion/client";
 
 function convertToUpdatedAgoTime(date) {
   let today = new Date();
@@ -79,6 +81,7 @@ function Analyzer() {
   const { username } = useParams();
   const [profileData, setProfileData] = useState(null);
   const [repoData, setRepoData] = useState([]);
+  const [contributionData, setContributionData] = useState([]);
 
   const languageColors = {
     JavaScript: "#f1e05a",
@@ -105,61 +108,29 @@ function Analyzer() {
     Dockerfile: "#384d54",
   };
 
-  const githubLanguages = [
-    "Python",
-    "JavaScript",
-    "TypeScript",
-    "Java",
-    "C++",
-    "C#",
-    "Go",
-    "Rust",
-    "PHP",
-    "Ruby",
-    "Swift",
-    "Kotlin",
-    "Dart",
-    "Shell",
-    "PowerShell",
-    "R",
-    "MATLAB",
-    "Haskell",
-    "Elixir",
-    "Scala",
-  ];
-
   const sortList = ["Most stars", "Most forks", "Recently updated"];
-
-  const contributionData = [
-    { month: "May", contributions: 15 },
-    { month: "Jun", contributions: 22 },
-    { month: "Jul", contributions: 18 },
-    { month: "Aug", contributions: 30 },
-    { month: "Sep", contributions: 25 },
-    { month: "Oct", contributions: 40 },
-    { month: "Nov", contributions: 35 },
-    { month: "Dec", contributions: 20 },
-    { month: "Jan", contributions: 28 },
-    { month: "Feb", contributions: 32 },
-    { month: "Mar", contributions: 45 },
-    { month: "Apr", contributions: 50 },
-  ];
 
   useEffect(() => {
     async function getUserProfile() {
       try {
-        let [profileResult, repoResult] = await Promise.all([
+        let [profileResult, repoResult, eventsResult] = await Promise.all([
           fetch(`https://api.github.com/users/${username}`),
           fetch(
             `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
+          ),
+          fetch(
+            `https://api.github.com/users/${username}/events/public?per_page=100&page=1`,
           ),
         ]);
 
         let profileData = await profileResult.json();
         let repoData = await repoResult.json();
+        let contributionData = await eventsResult.json();
 
         setProfileData(profileData);
         setRepoData(repoData);
+        setContributionData(contributionData);
+        console.log(contributionData);
       } catch (error) {
         console.log("Error fetching data");
       }
@@ -204,12 +175,14 @@ function Analyzer() {
     })),
   ];
 
-  let reposWithLanguage = repoData.filter((repo) => repo.language)
+  let reposWithLanguage = repoData.filter((repo) => repo.language);
 
-  let languageUsagePercentage = languageUsagePieData.map((lang) => ({
-    language: lang.name,
-    percentage: ((lang.value / reposWithLanguage.length) * 100).toFixed(1),
-  })).sort((a , b) => b.percentage - a.percentage)
+  let languageUsagePercentage = languageUsagePieData
+    .map((lang) => ({
+      language: lang.name,
+      percentage: ((lang.value / reposWithLanguage.length) * 100).toFixed(1),
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
 
   let filteredRepoData = repoData.filter((repo) => {
     let filteredByLanguage = repo.language == languageFilter || !languageFilter;
@@ -232,6 +205,69 @@ function Analyzer() {
       (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
     );
   }
+
+  let relevantContributionData = contributionData
+    .filter(
+      (contribution) =>
+        contribution.type == "PushEvent" ||
+        contribution.type == "PullRequestEvent" ||
+        contribution.type == "IssuesEvent",
+    )
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  let contributionDayFrequencyObj = {};
+  let contributionMonthFrequencyObj = {};
+  let mostActiveDay = "";
+  let mostActiveMonth = "";
+  let totalContributions = relevantContributionData.length;
+
+  let frequency = 0;
+  for (const contribution of relevantContributionData) {
+    let date = new Date(contribution.created_at)
+      .toString()
+      .split(" ")
+      .slice(1, 4)
+      .join(" ");
+    contributionDayFrequencyObj[date] =
+      (contributionDayFrequencyObj[date] || 0) + 1;
+
+    if (frequency < contributionDayFrequencyObj[date]) {
+      frequency = contributionDayFrequencyObj[date];
+      mostActiveDay = date;
+    }
+  }
+  mostActiveDay = new Date(mostActiveDay).toLocaleDateString("en-US", {
+    weekday: "long",
+  })
+
+  if(mostActiveDay == "Invalid Date"){
+    mostActiveDay = "None"
+  }
+
+  frequency = 0;
+  for (const contribution of relevantContributionData) {
+    let month = new Date(contribution.created_at).toLocaleDateString("en-us", {
+      month: "long",
+    });
+    contributionMonthFrequencyObj[month] =
+      (contributionMonthFrequencyObj[month] || 0) + 1;
+
+    if (frequency < contributionMonthFrequencyObj[month]) {
+      frequency = contributionMonthFrequencyObj[month];
+      mostActiveMonth = month;
+    }
+  }
+
+  if(!mostActiveMonth){
+    mostActiveMonth = "None"
+  }
+
+  let contributionsBarChartData = [
+    ...Object.entries(contributionDayFrequencyObj).map((contribution) => ({
+      date: contribution[0].split(" ").slice(0, 2).join(" "),
+      contributions: contribution[1],
+    })),
+  ];
 
   return (
     <div className={`flex flex-col items-center px-4 md:px-9 lg:px-20 gap-y-9`}>
@@ -307,7 +343,7 @@ function Analyzer() {
                 </span>
               )}
 
-              {profileData.followers && (
+              {profileData.followers > 0 && (
                 <span className={`flex items-center gap-x-0.5`}>
                   <MdOutlinePeopleAlt className={`text-lg`} />
                   <p className={`text-[0.8rem] text-gray-700`}>
@@ -319,7 +355,7 @@ function Analyzer() {
                 </span>
               )}
 
-              {profileData.following >= 0 && (
+              {profileData.following > 0 && (
                 <span className={`flex items-center gap-x-0.5`}>
                   <MdOutlinePersonAdd className={`text-lg`} />
                   <p className={`text-[0.8rem] text-gray-700`}>
@@ -364,46 +400,58 @@ function Analyzer() {
           className={`flex flex-col max-h-fit lg:h-full px-4 py-4 lg:w-[30%] bg-white gap-y-6 border border-gray-100`}
         >
           <div className={`text-lg font-semibold`}>Languages</div>
-          <div className={`flex justify-center w-full h-[9rem] lg:h-[19rem]`}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={languageUsagePieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50} // This creates the "donut" hole
-                  outerRadius={70} // This determines the total size
-                  paddingAngle={3} // Adds a tiny gap between slices for a modern look
-                  dataKey="value"
-                  stroke="none" // Removes the default border around slices
-                >
-                  {languageUsagePieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={languageColors[entry.name] || "#ccc"}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    fontSize: "14px",
-                    borderRadius: "8px",
-                    border: "none",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
+          {languageUsagePieData.length > 0 && (
+            <div className={`flex justify-center w-full h-[9rem] lg:h-[19rem]`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={languageUsagePieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50} // This creates the "donut" hole
+                    outerRadius={70} // This determines the total size
+                    paddingAngle={3} // Adds a tiny gap between slices for a modern look
+                    dataKey="value"
+                    stroke="none" // Removes the default border around slices
+                  >
+                    {languageUsagePieData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={languageColors[entry.name] || "#ccc"}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: "14px",
+                      borderRadius: "8px",
+                      border: "none",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          {languageUsagePercentage.length > 0 && (
+            <div className={`h-full lg:overflow-scroll flex flex-col gap-y-3`}>
+              {languageUsagePercentage.map((lang, index) => (
+                <LanguageInfo
+                  key={index}
+                  language={lang.language}
+                  percentage={lang.percentage}
+                  color={languageColors[lang.language]}
                 />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className={`h-full lg:overflow-scroll flex flex-col gap-y-3`}>
-            {languageUsagePercentage.map((lang, index) => (
-              <LanguageInfo
-                key={index}
-                language={lang.language}
-                percentage={lang.percentage}
-                color={languageColors[lang.language]}
-              />
-            ))}
+              ))}
+            </div>
+          )}
+
+          <div
+            className={`h-[10rem] lg:h-[27rem] flex flex-col gap-y-1 justify-center items-center text-[#737373] mb-6
+            ${languageUsagePieData.length == 0 ? "block" : "hidden"}`}
+          >
+            <PiFolderOpen className={`text-[2.5rem]`} />
+            <p className={`text-sm`}>No language found</p>
           </div>
         </div>
 
@@ -454,7 +502,7 @@ function Analyzer() {
                   {languageUsagePercentage.map((lang, index) => (
                     <div
                       key={index}
-                      className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] hover:text-white`}
+                      className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] active:bg-[#3a3a3a] hover:text-white active:text-white`}
                       onClick={() => setLanguageFilter(lang.language)}
                     >
                       {lang.language}
@@ -492,7 +540,7 @@ function Analyzer() {
                   {sortList.map((sortBy) => (
                     <div
                       key={sortBy}
-                      className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] hover:text-white`}
+                      className={`w-full px-[0.53rem] py-0.5 text-[0.88rem] text-black hover:bg-[#3a3a3a] active:bg-[#3a3a3a] hover:text-white active:text-white`}
                       onClick={() => setSortRepo(sortBy)}
                     >
                       {sortBy}
@@ -504,11 +552,11 @@ function Analyzer() {
             </div>
           </div>
 
-          <div
-            className={`h-full flex gap-x-4 flex-wrap gap-y-4 lg:overflow-scroll`}
-          >
-            {filteredRepoData.length > 0 ? (
-              filteredRepoData.map((repo, index) => (
+          {filteredRepoData.length > 0 && (
+            <div
+              className={`h-full flex gap-x-4 flex-wrap gap-y-4 lg:overflow-scroll`}
+            >
+              {filteredRepoData.map((repo, index) => (
                 <RepoCard
                   key={index}
                   repoName={repo.name}
@@ -520,10 +568,16 @@ function Analyzer() {
                   updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
                   username={username}
                 />
-              ))
-            ) : (
-              <div>No repo found, try refining search</div>
-            )}
+              ))}
+            </div>
+          )}
+
+          <div
+            className={`${filteredRepoData.length > 0 ? "hidden" : "block"}
+           h-44 lg:flex-1 flex flex-col gap-y-1.5 items-center justify-center text-[#737373] mb-3.5`}
+          >
+            <GoRepoTemplate className={`text-[2.5rem]`} />
+            <p className={`text-sm`}>we looked, no repo here!</p>
           </div>
         </div>
       </div>
@@ -533,14 +587,20 @@ function Analyzer() {
       <div
         className={`min-h-fit w-full flex flex-col gap-y-4 mb-10 px-4 py-4 rounded-sm bg-white border border-gray-100`}
       >
-        <div className={`text-lg font-semibold`}>Contribution Activity</div>
+        <div>
+          <div className={`text-lg font-semibold`}>Contribution Activity</div>
+          <p className="text-xs text-gray-400">
+            Based on public events · Data may vary due to GitHub API limits
+          </p>
+        </div>
 
         <div className={`h-60`}>
+          {contributionsBarChartData.length > 0 ? 
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={contributionData}>
+            <BarChart data={contributionsBarChartData}>
               {/* Hiding the axis lines/ticks for a cleaner, modern UI */}
               <XAxis
-                dataKey="month"
+                dataKey="date"
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "#6B7280", fontSize: 12 }}
@@ -562,15 +622,26 @@ function Analyzer() {
               />
             </BarChart>
           </ResponsiveContainer>
+          :
+          <div className={`h-full flex flex-col items-center justify-center gap-y-1.5 text-[#737373] mb-3.5`}>
+            <PiChartBar className={`text-[2.7rem]`}/>
+            <p className={`text-sm`}>Looks like things are taking a break</p>
+          </div>
+          }
         </div>
 
         <div className={`flex flex-wrap gap-x-5 gap-y-3`}>
-          <ContributionStatsCard title={"MOST ACTIVE DAY"} data={"Wednesday"} />
-          <ContributionStatsCard title={"MOST ACTIVE MONTH"} data={"June"} />
-          <ContributionStatsCard title={"CURRENT STREAK"} data={"14 days"} />
+          <ContributionStatsCard
+            title={"MOST ACTIVE DAY"}
+            data={mostActiveDay}
+          />
+          <ContributionStatsCard
+            title={"MOST ACTIVE MONTH"}
+            data={mostActiveMonth}
+          />
           <ContributionStatsCard
             title={"TOTAL CONTRIBUTIONS"}
-            data={"1842 (last year)"}
+            data={totalContributions}
           />
         </div>
       </div>
