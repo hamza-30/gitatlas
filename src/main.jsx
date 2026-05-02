@@ -6,6 +6,7 @@ import Analyzer from './pages/Analyzer'
 import Compare from './pages/Compare'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import Layout from './Layout'
+import SearchContextProvider from './context/SearchContextProvider'
 
 let router = createBrowserRouter([
     {
@@ -30,6 +31,8 @@ let router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router}/>
+    <SearchContextProvider>
+      <RouterProvider router={router}/>
+    </SearchContextProvider>
   </StrictMode>,
 )
