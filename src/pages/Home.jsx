@@ -104,7 +104,7 @@ function Home() {
 
         {recentSearches.length > 0 && (
           <div
-            className={`left-0 top-20.5 h-fit w-full md:w-[30rem] lg:w-[40rem] bg-white rounded-xl overflow-clip
+            className={`left-0 top-34 lg:top-20.5 h-fit w-full md:w-[30rem] lg:w-[40rem] bg-white rounded-xl overflow-clip
           ${showRecentSearchBox ? "absolute" : "hidden"}`}
           >
             {recentSearches.map((search) => (
