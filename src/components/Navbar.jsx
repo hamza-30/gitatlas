@@ -13,7 +13,7 @@ function Navbar() {
       </Link>
 
       {isAnalyzerPage && 
-        <Link className={`bg-[#252525] text-white text-[0.85rem] px-4 py-2 rounded-xl active:scale-95 transition-transform ease-in-out duration-100`}>
+        <Link to={"/compare"} className={`bg-[#252525] text-white text-[0.85rem] px-4 py-2 rounded-xl active:scale-95 transition-transform ease-in-out duration-100`}>
           Compare
         </Link>
       }
