@@ -15,6 +15,12 @@ function ProfileCard({
   location,
   office,
 }) {
+  
+  let modifiedJoinedDate = "";
+  modifiedJoinedDate = new Date(joinedDate).toDateString().split(" ");
+  modifiedJoinedDate =
+    modifiedJoinedDate.slice(1, 3).join(" ") + ", " + modifiedJoinedDate.slice(3).join(" ");
+
   return (
     <div
       className={`bg-white w-full min-h-fit border border-gray-200 rounded-sm p-5`}
@@ -27,19 +33,23 @@ function ProfileCard({
         </div>
 
         <div className={`flex flex-col`}>
-          <h2 className={`text-[1.5rem] font-medium`}>{name}kkk</h2>
-          <span className={`text-gray-500 text-sm`}>@{username}sdfsd</span>
+          <h2 className={`text-[1.5rem] font-medium`}>{name}</h2>
+          <span className={`text-gray-500 text-sm`}>@{username}</span>
         </div>
       </div>
 
       <div className={`flex gap-x-13 mt-7 pb-2 border-b border-b-gray-200`}>
         <div className={`flex flex-col`}>
           <p className={`text-sm`}>Followers</p>
-          <span className={`font-semibold text-[17px]`}>{followers}</span>
+          <span className={`font-semibold text-[17px]`}>
+            {followers.toLocaleString()}
+          </span>
         </div>
         <div className={`flex flex-col`}>
           <p className={`text-sm`}>Following</p>
-          <span className={`font-semibold text-[17px]`}>{following}</span>
+          <span className={`font-semibold text-[17px]`}>
+            {following.toLocaleString()}
+          </span>
         </div>
       </div>
 
@@ -47,7 +57,7 @@ function ProfileCard({
         {joinedDate && (
           <span className={`flex items-center gap-x-0.5`}>
             <IoMdCalendar className={`text-lg mb-0.5`} />
-            <p className={`text-[0.8rem] text-gray-700`}>{joinedDate}</p>
+            <p className={`text-[0.8rem] text-gray-700`}>{modifiedJoinedDate}</p>
           </span>
         )}
 
