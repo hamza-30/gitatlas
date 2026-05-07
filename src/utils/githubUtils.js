@@ -4,11 +4,15 @@ export function calculateStats(repoData) {
     0,
   );
 
+  const rawStarsCount = totalStars
+
   if (totalStars > 1000) {
     totalStars = `${(totalStars / 1000).toFixed(1)}K`;
   }
 
   let totalForks = repoData.reduce((acc, repo) => acc + repo.forks_count, 0);
+
+  const rawForksCount = totalForks
 
   if (totalForks > 1000) {
     totalForks = `${(totalForks / 1000).toFixed(1)}K`;
@@ -18,7 +22,7 @@ export function calculateStats(repoData) {
     repoData.map((repo) => repo.language).filter(Boolean),
   ).size;
 
-  return { totalStars, totalForks, totalLanguages };
+  return { totalStars, rawStarsCount, totalForks, rawForksCount, totalLanguages };
 }
 
 export function calculateLanguageUsageData(repoData) {
