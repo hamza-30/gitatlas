@@ -33,7 +33,10 @@ import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
 import { useParams } from "react-router";
 import { useSearchContext } from "../context/SearchContextProvider";
-import { calculateStats } from "../utils/githubUtils";
+import {
+  calculateLanguageUsageData,
+  calculateStats,
+} from "../utils/githubUtils";
 
 function convertToUpdatedAgoTime(date) {
   let today = new Date();
@@ -194,29 +197,8 @@ function Analyzer() {
 
   const { totalStars, totalForks, totalLanguages } = calculateStats(repoData);
 
-  let languageUsageFrequency = {};
-  for (const repo of repoData) {
-    if (repo.language) {
-      languageUsageFrequency[repo.language] =
-        (languageUsageFrequency[repo.language] || 0) + 1;
-    }
-  }
-
-  let languageUsagePieData = [
-    ...Object.entries(languageUsageFrequency).map((lang) => ({
-      name: lang[0],
-      value: lang[1],
-    })),
-  ];
-
-  let reposWithLanguage = repoData.filter((repo) => repo.language);
-
-  let languageUsagePercentage = languageUsagePieData
-    .map((lang) => ({
-      language: lang.name,
-      percentage: ((lang.value / reposWithLanguage.length) * 100).toFixed(1),
-    }))
-    .sort((a, b) => b.percentage - a.percentage);
+  const { languageUsagePieData, languageUsagePercentage } =
+    calculateLanguageUsageData(repoData);
 
   let filteredRepoData = repoData.filter((repo) => {
     let filteredByLanguage = repo.language == languageFilter || !languageFilter;

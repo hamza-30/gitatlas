@@ -3,7 +3,10 @@ import UsernameInput from "../components/UsernameInput";
 import { MdCompareArrows } from "react-icons/md";
 import ProfileCard from "../components/ProfileCard";
 import { IoStatsChartOutline } from "react-icons/io5";
-import { calculateStats } from "../utils/githubUtils";
+import {
+  calculateLanguageUsageData,
+  calculateStats,
+} from "../utils/githubUtils";
 
 function Compare() {
   const [user1, setUser1] = useState("");
@@ -66,6 +69,24 @@ function Compare() {
     calculateStats(user1RepoData);
   const { totalStars: user2TotalStars, totalForks: user2TotalForks } =
     calculateStats(user2RepoData);
+
+  const {
+    languageUsagePieData: user1LanguagePieData,
+    languageUsagePercentage: user1LanguagePercentage,
+  } = calculateLanguageUsageData(user1RepoData);
+  const {
+    languageUsagePieData: user2LanguagePieData,
+    languageUsagePercentage: user2LanguagePercentage,
+  } = calculateLanguageUsageData(user2RepoData);
+
+  const user1TopLanguages = user1LanguagePercentage
+    .slice(0, 2)
+    .map((lang) => lang.language)
+    .join(", ");
+  const user2TopLanguages = user2LanguagePercentage
+    .slice(0, 2)
+    .map((lang) => lang.language)
+    .join(", ");
 
   return (
     <div
@@ -215,13 +236,17 @@ function Compare() {
               <tr className={` h-12 text-gray-700 hover:bg-gray-50`}>
                 <td
                   className={`w-1/3 font-medium text-center text-lg text-black`}
-                ></td>
+                >
+                  {user1TopLanguages}
+                </td>
                 <td className={`w-1/3 font-medium text-center text-xs`}>
                   TOP LANGUAGES
                 </td>
                 <td
                   className={`w-1/3 font-medium text-center text-lg text-black`}
-                ></td>
+                >
+                  {user2TopLanguages}
+                </td>
               </tr>
             </tbody>
           </table>
