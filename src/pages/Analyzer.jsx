@@ -33,6 +33,7 @@ import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
 import { useParams } from "react-router";
 import { useSearchContext } from "../context/SearchContextProvider";
+import { calculateStats } from "../utils/githubUtils";
 
 function convertToUpdatedAgoTime(date) {
   let today = new Date();
@@ -142,7 +143,7 @@ function Analyzer() {
         setContributionData(contributionData);
 
         let searches = JSON.parse(localStorage.getItem("searches")) || [];
-        searches = searches.filter((searchName) => searchName !== username)
+        searches = searches.filter((searchName) => searchName !== username);
         searches.unshift(username);
 
         if (searches.length > 5) {
@@ -191,15 +192,7 @@ function Analyzer() {
   joinedDate =
     joinedDate.slice(1, 3).join(" ") + ", " + joinedDate.slice(3).join(" ");
 
-  let totalStars = repoData
-    .reduce((acc, repo) => acc + repo.stargazers_count, 0)
-    .toLocaleString();
-  let totalForks = repoData
-    .reduce((acc, repo) => acc + repo.forks_count, 0)
-    .toLocaleString();
-  let totalLanguages = new Set(
-    repoData.map((repo) => repo.language).filter(Boolean),
-  ).size;
+  const { totalStars, totalForks, totalLanguages } = calculateStats(repoData);
 
   let languageUsageFrequency = {};
   for (const repo of repoData) {

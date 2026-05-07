@@ -2,14 +2,18 @@ import React, { useEffect, useState } from "react";
 import UsernameInput from "../components/UsernameInput";
 import { MdCompareArrows } from "react-icons/md";
 import ProfileCard from "../components/ProfileCard";
+import { IoStatsChartOutline } from "react-icons/io5";
+import { calculateStats } from "../utils/githubUtils";
 
 function Compare() {
   const [user1, setUser1] = useState("");
   const [user2, setUser2] = useState("");
   const [user1Profile, setUser1Profile] = useState(null);
   const [user2Profile, setUser2Profile] = useState(null);
+  const [user1RepoData, setUser1RepoData] = useState([]);
+  const [user2RepoData, setUser2RepoData] = useState([]);
   const [fetchError, setFetchError] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   function onCompareClick() {
     if (user1 && user2) {
@@ -19,9 +23,20 @@ function Compare() {
           setUser1Profile(null);
           setUser2Profile(null);
 
-          const [user1ProfileResult, user2ProfileResult] = await Promise.all([
+          const [
+            user1ProfileResult,
+            user2ProfileResult,
+            user1RepoResult,
+            user2RepoResult,
+          ] = await Promise.all([
             fetch(`https://api.github.com/users/${user1}`),
             fetch(`https://api.github.com/users/${user2}`),
+            fetch(
+              `https://api.github.com/users/${user1}/repos?per_page=100&sort=updated`,
+            ),
+            fetch(
+              `https://api.github.com/users/${user2}/repos?per_page=100&sort=updated`,
+            ),
           ]);
 
           if (!user1ProfileResult.ok || !user2ProfileResult.ok) {
@@ -30,9 +45,13 @@ function Compare() {
 
           let user1ProfileData = await user1ProfileResult.json();
           let user2ProfileData = await user2ProfileResult.json();
+          let user1RepoData = await user1RepoResult.json();
+          let user2RepoData = await user2RepoResult.json();
 
           setUser1Profile(user1ProfileData);
           setUser2Profile(user2ProfileData);
+          setUser1RepoData(user1RepoData);
+          setUser2RepoData(user2RepoData);
         } catch (error) {
           setFetchError(true);
           console.log(error);
@@ -42,6 +61,11 @@ function Compare() {
       getUsersProfile();
     }
   }
+
+  const { totalStars: user1TotalStars, totalForks: user1TotalForks } =
+    calculateStats(user1RepoData);
+  const { totalStars: user2TotalStars, totalForks: user2TotalForks } =
+    calculateStats(user2RepoData);
 
   return (
     <div
@@ -85,6 +109,7 @@ function Compare() {
         </div>
       </div>
 
+      {/* Profile Cards */}
       <div
         className={`w-full h-fit flex flex-col md:flex-row gap-y-2.5 gap-x-2`}
       >
@@ -114,6 +139,95 @@ function Compare() {
           />
         )}
       </div>
+      {/* Profile Cards */}
+
+      {/* Profile Metrics */}
+      {user1RepoData.length > 0 && user2RepoData.length > 0 && (
+        <div
+          className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
+        >
+          <div
+            className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white`}
+          >
+            <IoStatsChartOutline className={`text-lg`} />
+            <p className={`text-xs mt-1 font-semibold`}>PROFILE METRICS</p>
+          </div>
+          <table className={`w-full`}>
+            <thead className={`h-8 bg-gray-50 text-sm text-gray-600`}>
+              <tr>
+                <th className={`w-1/3 font-medium`}>@{user1Profile?.login}</th>
+                <th className={`w-1/3 font-medium`}>METRIC</th>
+                <th className={`w-1/3 font-medium`}>@{user2Profile?.login}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+              >
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user1TotalStars}
+                </td>
+                <td className={`w-1/3 font-medium text-center text-xs`}>
+                  TOTAL STARS
+                </td>
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user2TotalStars}
+                </td>
+              </tr>
+              <tr
+                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+              >
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user1TotalForks}
+                </td>
+                <td className={`w-1/3 font-medium text-center text-xs`}>
+                  TOTAL FORKS
+                </td>
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user2TotalForks}
+                </td>
+              </tr>
+              <tr
+                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+              >
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user1RepoData.length}
+                </td>
+                <td className={`w-1/3 font-medium text-center text-xs`}>
+                  PUBLIC REPOS
+                </td>
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                >
+                  {user2RepoData.length}
+                </td>
+              </tr>
+              <tr className={` h-12 text-gray-700 hover:bg-gray-50`}>
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                ></td>
+                <td className={`w-1/3 font-medium text-center text-xs`}>
+                  TOP LANGUAGES
+                </td>
+                <td
+                  className={`w-1/3 font-medium text-center text-lg text-black`}
+                ></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+      {/* Profile Metrics */}
     </div>
   );
 }
