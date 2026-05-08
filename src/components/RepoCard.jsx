@@ -12,6 +12,8 @@ function RepoCard({
   forksCount,
   updatedTime,
   username,
+  isCompareComponent = false,
+  isFlexRowReverse = false,
 }) {
   let starCount = 0;
   let forkCount = 0;
@@ -24,9 +26,11 @@ function RepoCard({
   return (
     <a
       href={`https://www.github.com/${username}/${repoName}`}
-      className={`rounded-sm border border-gray-200 w-full lg:w-[48%] grow h-40 px-3 py-3 cursor-pointer relative group hover:bg-gray-100 transition-all ease-in-out duration-150`}
+      className={`rounded-sm border border-gray-200 w-full grow h-40 px-3 py-3 cursor-pointer relative group hover:bg-gray-100 transition-all ease-in-out duration-150
+        ${isCompareComponent ? "lg:w-full" : "lg:w-[48%]"}`}
     >
-      <div className={`flex justify-between items-center`}>
+      <div className={`flex justify-between items-center
+        ${isFlexRowReverse ? "flex-row-reverse" : "flex-row"}`}>
         <div className={`font-semibold group-hover:underline`}>{repoName}</div>
         <div
           className={`text-xs bg-gray-200 px-2 py-0.5 rounded-sm text-gray-700`}
@@ -36,13 +40,15 @@ function RepoCard({
       </div>
 
       <p
-        className={`mt-3 h-10 overflow-hidden line-clamp-3 text-sm text-gray-600`}
+        className={`mt-3 h-10 overflow-hidden line-clamp-3 text-sm text-gray-600
+          ${isFlexRowReverse ? "text-right" : "text-left"}`}
       >
         {description}
       </p>
 
       <div
-        className={`absolute left-0 right-0 flex flex-col sm:flex-row gap-y-1 sm:items-center justify-between bottom-3 text-gray-700 px-3 flex-wrap`}
+        className={`absolute left-0 right-0 flex flex-col sm:flex-row gap-y-1 sm:items-center justify-between bottom-3 text-gray-700 px-3 flex-wrap
+          ${isFlexRowReverse ? "sm:flex-row-reverse" : "sm:flex-row"}`}
       >
         <div className={`flex gap-x-2.5 items-center`}>
           {language && (
