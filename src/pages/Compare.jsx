@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import UsernameInput from "../components/UsernameInput";
 import { MdCompareArrows } from "react-icons/md";
 import ProfileCard from "../components/ProfileCard";
@@ -33,64 +33,6 @@ function Compare() {
   const [fetchError, setFetchError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const githubLanguages = {
-    JavaScript: "JS",
-    TypeScript: "TS",
-    Python: "PY",
-    Java: "JAVA",
-    "C++": "CPP",
-    C: "C",
-    "C#": "CS",
-    PHP: "PHP",
-    Ruby: "RB",
-    Go: "GO",
-    Rust: "RS",
-    Swift: "SWIFT",
-    Kotlin: "KT",
-    Dart: "DART",
-    Scala: "SCALA",
-    Perl: "PL",
-    R: "R",
-    MATLAB: "M",
-    Shell: "SH",
-    Bash: "BASH",
-    PowerShell: "PS1",
-    Lua: "LUA",
-    Haskell: "HS",
-    Elixir: "EX",
-    Erlang: "ERL",
-    Clojure: "CLJ",
-    FSharp: "FS",
-    OCaml: "ML",
-    Julia: "JL",
-    Groovy: "GROOVY",
-    ObjectiveC: "M",
-    VisualBasic: "VB",
-    Assembly: "ASM",
-    SQL: "SQL",
-    HTML: "HTML",
-    CSS: "CSS",
-    SCSS: "SCSS",
-    Less: "LESS",
-    XML: "XML",
-    YAML: "YML",
-    JSON: "JSON",
-    Markdown: "MD",
-    Dockerfile: "DOCKERFILE",
-    Makefile: "MAKEFILE",
-    Vue: "VUE",
-    Svelte: "SVELTE",
-    Solidity: "SOL",
-    Zig: "ZIG",
-    Nim: "NIM",
-    Crystal: "CR",
-    Fortran: "F90",
-    COBOL: "COB",
-    Ada: "ADB",
-    Prolog: "PL",
-    Lisp: "LISP",
-  };
-
   const languageColors = {
     JavaScript: "#f1e05a",
     TypeScript: "#3178c6",
@@ -120,6 +62,7 @@ function Compare() {
     if (user1 && user2) {
       async function getUsersProfile() {
         try {
+          setLoading(true);
           setFetchError(false);
           setUser1Profile(null);
           setUser2Profile(null);
@@ -141,7 +84,7 @@ function Compare() {
           ]);
 
           if (!user1ProfileResult.ok || !user2ProfileResult.ok) {
-            throw new Error("Failed to fetch users data.");
+            throw new Error("Failed to fetch users' data.");
           }
 
           let user1ProfileData = await user1ProfileResult.json();
@@ -156,6 +99,8 @@ function Compare() {
         } catch (error) {
           setFetchError(true);
           console.log(error);
+        } finally {
+          setLoading(false);
         }
       }
 
@@ -212,10 +157,10 @@ function Compare() {
     user2Profile?.followers,
   );
 
-  const user1TopRepos = user1RepoData
+  const user1TopRepos = [...user1RepoData]
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, 4);
-  const user2TopRepos = user2RepoData
+  const user2TopRepos = [...user2RepoData]
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
     .slice(0, 4);
 
@@ -257,6 +202,7 @@ function Compare() {
           <button
             className={`bg-black text-white w-fit px-4 py-1.5 flex items-center justify-center gap-x-1 active:scale-95 transition-transform ease-out duration-150 rounded-sm`}
             onClick={onCompareClick}
+            disabled={loading}
           >
             <MdCompareArrows className={`text-[1.3rem]`} />
             <p className={`text-[0.88rem]`}>Compare</p>
@@ -264,299 +210,317 @@ function Compare() {
         </div>
       </div>
 
-      {/* Profile Cards */}
       <div
-        className={`w-full h-fit flex flex-col md:flex-row gap-y-2.5 gap-x-2`}
-      >
-        {user1Profile && (
-          <ProfileCard
-            imgSource={user1Profile.avatar_url}
-            name={user1Profile.name}
-            username={user1Profile.login}
-            followers={user1Profile.followers}
-            following={user1Profile.following}
-            joinedDate={user1Profile.created_at}
-            location={user1Profile.location}
-            office={user1Profile.company}
-          />
-        )}
-        <div className={`self-stretch w-1 bg-gray-200`}></div>
-        {user2Profile && (
-          <ProfileCard
-            imgSource={user2Profile.avatar_url}
-            name={user2Profile.name}
-            username={user2Profile.login}
-            followers={user2Profile.followers}
-            following={user2Profile.following}
-            joinedDate={user2Profile.created_at}
-            location={user2Profile.location}
-            office={user2Profile.company}
-          />
-        )}
-      </div>
-      {/* Profile Cards */}
+        className={`h-10 w-10 border-[2px] border-l-transparent border-r-transparent border-t-black rounded-full animate-spin
+        ${loading ? "block" : "hidden"}`}
+      ></div>
 
-      {/* Profile Metrics */}
-      {user1RepoData.length > 0 && user2RepoData.length > 0 && (
+      {fetchError && <div>❌ Failed to fetch users' data.</div>}
+
+      <div className={`${loading ? "hidden" : "block"}`}>
+        {/* Profile Cards */}
         <div
-          className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
+          className={`w-full h-fit flex flex-col md:flex-row gap-y-2.5 gap-x-2`}
         >
-          <div
-            className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white rounded-t-sm`}
-          >
-            <IoStatsChartOutline className={`text-lg`} />
-            <p className={`text-xs mt-1 font-semibold`}>PROFILE METRICS</p>
-          </div>
-          <table className={`w-full overflow-x-scroll`}>
-            <thead className={`h-8 bg-gray-50 text-sm text-gray-600`}>
-              <tr>
-                <th className={`w-1/3 font-medium`}>@{user1Profile?.login}</th>
-                <th className={`w-1/3 font-medium`}>METRIC</th>
-                <th className={`w-1/3 font-medium`}>@{user2Profile?.login}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
-              >
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {starsWinner == "left" && "🏆"}{" "}
-                  <span
-                    className={`${starsWinner == "left" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user1TotalStars}
-                  </span>
-                </td>
-                <td className={`w-1/3 font-medium text-center text-xs`}>
-                  TOTAL STARS
-                </td>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {starsWinner == "right" && "🏆"}{" "}
-                  <span
-                    className={`${starsWinner == "right" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user2TotalStars}
-                  </span>
-                </td>
-              </tr>
-              <tr
-                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
-              >
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {forksWinner == "left" && "🏆"}{" "}
-                  <span
-                    className={`${forksWinner == "left" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user1TotalForks}
-                  </span>
-                </td>
-                <td className={`w-1/3 font-medium text-center text-xs`}>
-                  TOTAL FORKS
-                </td>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {forksWinner == "right" && "🏆"}{" "}
-                  <span
-                    className={`${forksWinner == "right" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user2TotalForks}
-                  </span>
-                </td>
-              </tr>
-              <tr
-                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
-              >
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {repoCountWinner == "left" && "🏆"}{" "}
-                  <span
-                    className={`${repoCountWinner == "left" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user1RepoData.length}
-                  </span>
-                </td>
-                <td className={`w-1/3 font-medium text-center text-xs`}>
-                  PUBLIC REPOS
-                </td>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {repoCountWinner == "right" && "🏆"}{" "}
-                  <span
-                    className={`${repoCountWinner == "right" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user2RepoData.length}
-                  </span>
-                </td>
-              </tr>
-              <tr
-                className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
-              >
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {languageCountWinner == "left" && "🏆"}{" "}
-                  <span
-                    className={`${languageCountWinner == "left" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user1LanguageCount}
-                  </span>
-                </td>
-                <td className={`w-1/3 font-medium text-center text-xs`}>
-                  LANGUAGES
-                </td>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {languageCountWinner == "right" && "🏆"}{" "}
-                  <span
-                    className={`${languageCountWinner == "right" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user2LanguageCount}
-                  </span>
-                </td>
-              </tr>
-              <tr className={` h-12 text-gray-700 hover:bg-gray-50`}>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {followersWinner == "left" && "🏆"}{" "}
-                  <span
-                    className={`${followersWinner == "left" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user1Followers}
-                  </span>
-                </td>
-                <td className={`w-1/3 font-medium text-center text-xs`}>
-                  FOLLOWERS
-                </td>
-                <td
-                  className={`w-1/3 font-medium text-center text-lg text-black`}
-                >
-                  {followersWinner == "right" && "🏆"}{" "}
-                  <span
-                    className={`${followersWinner == "right" ? "text-green-600" : "text-black"}`}
-                  >
-                    {user2Followers}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
-      {/* Profile Metrics */}
-
-      {/* Language Breakdown */}
-      {(user1LanguagePieData.length > 0 || user2LanguagePieData.length > 0) && (
-        <div
-          className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
-        >
-          <div
-            className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white rounded-t-sm`}
-          >
-            <LuChartPie className={`text-lg`} />
-            <p className={`text-xs mt-1 font-semibold`}>LANGUAGE BREAKDOWN</p>
-          </div>
-
-          <div className={`flex flex-col lg:flex-row gap-x-3`}>
-            <LanguagePieChart
-              languageUsagePieData={user1LanguagePieData}
-              languageUsagePercentage={user1LanguagePercentage}
-              isFlexRowReverse={false}
+          {user1Profile && (
+            <ProfileCard
+              imgSource={user1Profile.avatar_url}
+              name={user1Profile.name}
+              username={user1Profile.login}
+              followers={user1Profile.followers}
+              following={user1Profile.following}
+              joinedDate={user1Profile.created_at}
+              location={user1Profile.location}
+              office={user1Profile.company}
             />
-            <LanguagePieChart
-              languageUsagePieData={user2LanguagePieData}
-              languageUsagePercentage={user2LanguagePercentage}
-              isFlexRowReverse={true}
+          )}
+          <div className={`self-stretch w-1 bg-gray-200`}></div>
+          {user2Profile && (
+            <ProfileCard
+              imgSource={user2Profile.avatar_url}
+              name={user2Profile.name}
+              username={user2Profile.login}
+              followers={user2Profile.followers}
+              following={user2Profile.following}
+              joinedDate={user2Profile.created_at}
+              location={user2Profile.location}
+              office={user2Profile.company}
             />
-          </div>
+          )}
         </div>
-      )}
-      {/* Language Breakdown */}
+        {/* Profile Cards */}
 
-      {/* Top Repositories */}
-      <div
-        className={`w-full h-fit mt-8 flex flex-col md:flex-row gap-x-6 gap-y-5 mb-10`}
-      >
-        {user1RepoData.length > 0 && (
+        {/* Profile Metrics */}
+        {user1RepoData.length > 0 && user2RepoData.length > 0 && (
           <div
-            className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+            className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
           >
             <div
-              className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm`}
+              className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white rounded-t-sm`}
             >
-              <div className={`flex items-center gap-x-2`}>
-                <GoFileDirectory className={`text-lg`} />
-                <p className={`text-xs mt-1 font-semibold`}>TOP REPOSITORIES</p>
-              </div>
-              <div className={`text-xs`}>@{user1}</div>
+              <IoStatsChartOutline className={`text-lg`} />
+              <p className={`text-xs mt-1 font-semibold`}>PROFILE METRICS</p>
             </div>
-
-            <div className={`w-full flex flex-wrap gap-0`}>
-              {user1RepoData.length > 0 &&
-                user1TopRepos.map((repo, index) => (
-                  <RepoCard
-                    key={index}
-                    repoName={repo.name}
-                    description={repo.description}
-                    language={repo.language}
-                    languageColor={languageColors[repo.language]}
-                    starsCount={repo.stargazers_count}
-                    forksCount={repo.forks_count}
-                    updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
-                    username={user1}
-                    isCompareComponent={true}
-                  />
-                ))}
-            </div>
+            <table className={`w-full overflow-x-scroll`}>
+              <thead className={`h-8 bg-gray-50 text-sm text-gray-600`}>
+                <tr>
+                  <th className={`w-1/3 font-medium`}>
+                    @{user1Profile?.login}
+                  </th>
+                  <th className={`w-1/3 font-medium`}>METRIC</th>
+                  <th className={`w-1/3 font-medium`}>
+                    @{user2Profile?.login}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+                >
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {starsWinner == "left" && "🏆"}{" "}
+                    <span
+                      className={`${starsWinner == "left" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user1TotalStars}
+                    </span>
+                  </td>
+                  <td className={`w-1/3 font-medium text-center text-xs`}>
+                    TOTAL STARS
+                  </td>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {starsWinner == "right" && "🏆"}{" "}
+                    <span
+                      className={`${starsWinner == "right" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user2TotalStars}
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+                >
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {forksWinner == "left" && "🏆"}{" "}
+                    <span
+                      className={`${forksWinner == "left" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user1TotalForks}
+                    </span>
+                  </td>
+                  <td className={`w-1/3 font-medium text-center text-xs`}>
+                    TOTAL FORKS
+                  </td>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {forksWinner == "right" && "🏆"}{" "}
+                    <span
+                      className={`${forksWinner == "right" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user2TotalForks}
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+                >
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {repoCountWinner == "left" && "🏆"}{" "}
+                    <span
+                      className={`${repoCountWinner == "left" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user1RepoData.length}
+                    </span>
+                  </td>
+                  <td className={`w-1/3 font-medium text-center text-xs`}>
+                    PUBLIC REPOS
+                  </td>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {repoCountWinner == "right" && "🏆"}{" "}
+                    <span
+                      className={`${repoCountWinner == "right" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user2RepoData.length}
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  className={`border-b border-gray-200 h-12 text-gray-700 hover:bg-gray-50`}
+                >
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {languageCountWinner == "left" && "🏆"}{" "}
+                    <span
+                      className={`${languageCountWinner == "left" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user1LanguageCount}
+                    </span>
+                  </td>
+                  <td className={`w-1/3 font-medium text-center text-xs`}>
+                    LANGUAGES
+                  </td>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {languageCountWinner == "right" && "🏆"}{" "}
+                    <span
+                      className={`${languageCountWinner == "right" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user2LanguageCount}
+                    </span>
+                  </td>
+                </tr>
+                <tr className={` h-12 text-gray-700 hover:bg-gray-50`}>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {followersWinner == "left" && "🏆"}{" "}
+                    <span
+                      className={`${followersWinner == "left" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user1Followers}
+                    </span>
+                  </td>
+                  <td className={`w-1/3 font-medium text-center text-xs`}>
+                    FOLLOWERS
+                  </td>
+                  <td
+                    className={`w-1/3 font-medium text-center text-lg text-black`}
+                  >
+                    {followersWinner == "right" && "🏆"}{" "}
+                    <span
+                      className={`${followersWinner == "right" ? "text-green-600" : "text-black"}`}
+                    >
+                      {user2Followers}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         )}
+        {/* Profile Metrics */}
 
-        {user2RepoData.length > 0 && (
+        {/* Language Breakdown */}
+        {(user1LanguagePieData.length > 0 ||
+          user2LanguagePieData.length > 0) && (
           <div
-            className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+            className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
           >
             <div
-              className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm flex-row-reverse`}
+              className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white rounded-t-sm`}
             >
-              <div className={`flex items-center gap-x-2`}>
-                <GoFileDirectory className={`text-lg`} />
-                <p className={`text-xs mt-1 font-semibold`}>TOP REPOSITORIES</p>
-              </div>
-              <div className={`text-xs`}>@{user2}</div>
+              <LuChartPie className={`text-lg`} />
+              <p className={`text-xs mt-1 font-semibold`}>LANGUAGE BREAKDOWN</p>
             </div>
 
-            <div className={`w-full flex flex-wrap gap-0`}>
-              {user2RepoData.length > 0 &&
-                user2TopRepos.map((repo, index) => (
-                  <RepoCard
-                    key={index}
-                    repoName={repo.name}
-                    description={repo.description}
-                    language={repo.language}
-                    languageColor={languageColors[repo.language]}
-                    starsCount={repo.stargazers_count}
-                    forksCount={repo.forks_count}
-                    updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
-                    username={user2}
-                    isCompareComponent={true}
-                    isFlexRowReverse={true}
-                  />
-                ))}
+            <div className={`flex flex-col lg:flex-row gap-x-3`}>
+              <LanguagePieChart
+                languageUsagePieData={user1LanguagePieData}
+                languageUsagePercentage={user1LanguagePercentage}
+                isFlexRowReverse={false}
+              />
+              <LanguagePieChart
+                languageUsagePieData={user2LanguagePieData}
+                languageUsagePercentage={user2LanguagePercentage}
+                isFlexRowReverse={true}
+              />
             </div>
           </div>
         )}
+        {/* Language Breakdown */}
+
+        {/* Top Repositories */}
+        <div
+          className={`w-full h-fit mt-8 flex flex-col md:flex-row gap-x-6 gap-y-5 mb-10`}
+        >
+          {user1RepoData.length > 0 && (
+            <div
+              className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+            >
+              <div
+                className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm`}
+              >
+                <div className={`flex items-center gap-x-2`}>
+                  <GoFileDirectory className={`text-lg`} />
+                  <p className={`text-xs mt-1 font-semibold`}>
+                    TOP REPOSITORIES
+                  </p>
+                </div>
+                <div className={`text-xs`}>@{user1}</div>
+              </div>
+
+              <div className={`w-full flex flex-wrap gap-0`}>
+                {user1RepoData.length > 0 &&
+                  user1TopRepos.map((repo, index) => (
+                    <RepoCard
+                      key={index}
+                      repoName={repo.name}
+                      description={repo.description}
+                      language={repo.language}
+                      languageColor={languageColors[repo.language]}
+                      starsCount={repo.stargazers_count}
+                      forksCount={repo.forks_count}
+                      updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
+                      username={user1}
+                      isCompareComponent={true}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {user2RepoData.length > 0 && (
+            <div
+              className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+            >
+              <div
+                className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm flex-row-reverse`}
+              >
+                <div className={`flex items-center gap-x-2`}>
+                  <GoFileDirectory className={`text-lg`} />
+                  <p className={`text-xs mt-1 font-semibold`}>
+                    TOP REPOSITORIES
+                  </p>
+                </div>
+                <div className={`text-xs`}>@{user2}</div>
+              </div>
+
+              <div className={`w-full flex flex-wrap gap-0`}>
+                {user2RepoData.length > 0 &&
+                  user2TopRepos.map((repo, index) => (
+                    <RepoCard
+                      key={index}
+                      repoName={repo.name}
+                      description={repo.description}
+                      language={repo.language}
+                      languageColor={languageColors[repo.language]}
+                      starsCount={repo.stargazers_count}
+                      forksCount={repo.forks_count}
+                      updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
+                      username={user2}
+                      isCompareComponent={true}
+                      isFlexRowReverse={true}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Top Repositories */}
       </div>
-      {/* Top Repositories */}
     </div>
   );
 }
