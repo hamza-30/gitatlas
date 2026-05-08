@@ -223,7 +223,10 @@ function Compare() {
     <div
       className={`w-full min-h-[calc(100vh-100px)] px-4 md:px-9 lg:px-20 flex flex-col items-center justify-center`}
     >
-      <div className={`w-full md:w-160 lg:w-176`}>
+      <div
+        className={`w-full md:w-160 lg:w-176
+        ${user1Profile != null || user2Profile != null ? "pt-25" : "pt-0"}`}
+      >
         <h1 className={`text-[1.27rem] sm:text-[1.5rem] text-center mb-6`}>
           Compare profiles of two Github users.
         </h1>
