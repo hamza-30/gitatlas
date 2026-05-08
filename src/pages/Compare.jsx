@@ -7,6 +7,8 @@ import {
   calculateLanguageUsageData,
   calculateStats,
 } from "../utils/githubUtils";
+import { LuChartPie } from "react-icons/lu";
+import LanguagePieChart from "../components/LanguagePieChart";
 
 function decideWinner(val1, val2) {
   if (val1 > val2) {
@@ -414,6 +416,34 @@ function Compare() {
         </div>
       )}
       {/* Profile Metrics */}
+
+      {/* Language Breakdown */}
+      {(user1LanguagePieData.length > 0 || user2LanguagePieData.length > 0) && (
+        <div
+          className={`w-full h-fit bg-white mt-8 border border-gray-200 rounded-sm`}
+        >
+          <div
+            className={`px-7 py-2 flex items-center gap-x-2 bg-black text-white rounded-t-sm`}
+          >
+            <LuChartPie className={`text-lg`} />
+            <p className={`text-xs mt-1 font-semibold`}>LANGUAGE BREAKDOWN</p>
+          </div>
+
+          <div className={`flex flex-col lg:flex-row gap-x-3`}>
+            <LanguagePieChart
+              languageUsagePieData={user1LanguagePieData}
+              languageUsagePercentage={user1LanguagePercentage}
+              isFlexRowReverse={false}
+            />
+            <LanguagePieChart
+              languageUsagePieData={user2LanguagePieData}
+              languageUsagePercentage={user2LanguagePercentage}
+              isFlexRowReverse={true}
+            />
+          </div>
+        </div>
+      )}
+      {/* Language Breakdown */}
     </div>
   );
 }
