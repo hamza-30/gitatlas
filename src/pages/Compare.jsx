@@ -9,6 +9,9 @@ import {
 } from "../utils/githubUtils";
 import { LuChartPie } from "react-icons/lu";
 import LanguagePieChart from "../components/LanguagePieChart";
+import { GoFileDirectory } from "react-icons/go";
+import RepoCard from "../components/RepoCard";
+import { convertToUpdatedAgoTime } from "../utils/githubUtils";
 
 function decideWinner(val1, val2) {
   if (val1 > val2) {
@@ -86,6 +89,31 @@ function Compare() {
     Ada: "ADB",
     Prolog: "PL",
     Lisp: "LISP",
+  };
+
+  const languageColors = {
+    JavaScript: "#f1e05a",
+    TypeScript: "#3178c6",
+    Python: "#3572A5",
+    Java: "#b07219",
+    C: "#555555",
+    "C++": "#f34b7d",
+    "C#": "#178600",
+    Go: "#00ADD8",
+
+    Rust: "#dea584",
+    Ruby: "#701516",
+    PHP: "#4F5D95",
+    Swift: "#ffac45",
+    Kotlin: "#A97BFF",
+    Dart: "#00B4AB",
+
+    HTML: "#e34c26",
+    CSS: "#563d7c",
+    SCSS: "#c6538c",
+
+    Shell: "#89e051",
+    Dockerfile: "#384d54",
   };
 
   function onCompareClick() {
@@ -183,6 +211,13 @@ function Compare() {
     user1Profile?.followers,
     user2Profile?.followers,
   );
+
+  const user1TopRepos = user1RepoData
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, 4);
+  const user2TopRepos = user2RepoData
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, 4);
 
   return (
     <div
@@ -444,6 +479,81 @@ function Compare() {
         </div>
       )}
       {/* Language Breakdown */}
+
+      {/* Top Repositories */}
+      <div
+        className={`w-full h-fit mt-8 flex flex-col md:flex-row gap-x-6 gap-y-5 mb-10`}
+      >
+        {user1RepoData.length > 0 && (
+          <div
+            className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+          >
+            <div
+              className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm`}
+            >
+              <div className={`flex items-center gap-x-2`}>
+                <GoFileDirectory className={`text-lg`} />
+                <p className={`text-xs mt-1 font-semibold`}>TOP REPOSITORIES</p>
+              </div>
+              <div className={`text-xs`}>@{user1}</div>
+            </div>
+
+            <div className={`w-full flex flex-wrap gap-0`}>
+              {user1RepoData.length > 0 &&
+                user1TopRepos.map((repo, index) => (
+                  <RepoCard
+                    key={index}
+                    repoName={repo.name}
+                    description={repo.description}
+                    language={repo.language}
+                    languageColor={languageColors[repo.language]}
+                    starsCount={repo.stargazers_count}
+                    forksCount={repo.forks_count}
+                    updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
+                    username={user1}
+                    isCompareComponent={true}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
+
+        {user2RepoData.length > 0 && (
+          <div
+            className={`w-full h-fit bg-white border border-gray-200 rounded-sm`}
+          >
+            <div
+              className={`px-7 py-2 flex items-center justify-between bg-black text-white rounded-t-sm flex-row-reverse`}
+            >
+              <div className={`flex items-center gap-x-2`}>
+                <GoFileDirectory className={`text-lg`} />
+                <p className={`text-xs mt-1 font-semibold`}>TOP REPOSITORIES</p>
+              </div>
+              <div className={`text-xs`}>@{user2}</div>
+            </div>
+
+            <div className={`w-full flex flex-wrap gap-0`}>
+              {user2RepoData.length > 0 &&
+                user2TopRepos.map((repo, index) => (
+                  <RepoCard
+                    key={index}
+                    repoName={repo.name}
+                    description={repo.description}
+                    language={repo.language}
+                    languageColor={languageColors[repo.language]}
+                    starsCount={repo.stargazers_count}
+                    forksCount={repo.forks_count}
+                    updatedTime={convertToUpdatedAgoTime(repo.updated_at)}
+                    username={user2}
+                    isCompareComponent={true}
+                    isFlexRowReverse={true}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {/* Top Repositories */}
     </div>
   );
 }
