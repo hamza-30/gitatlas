@@ -28,10 +28,11 @@ import {
   YAxis,
 } from "recharts";
 import { PiFolderOpen } from "react-icons/pi";
+import { FaArrowRightLong } from "react-icons/fa6";
 import { PiChartBar } from "react-icons/pi";
 import RepoCard from "../components/RepoCard";
 import ContributionStatsCard from "../components/ContributionStatsCard";
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { useSearchContext } from "../context/SearchContextProvider";
 import {
   calculateLanguageUsageData,
@@ -130,11 +131,20 @@ function Analyzer() {
   if (error) {
     return (
       <div
-        className={`h-[calc(100vh-52px)] flex-1 flex flex-col justify-center items-center px-4 pb-20`}
+        className={`h-[calc(100vh-52px)] flex-1 flex flex-col gap-y-3 justify-center items-center px-4 pb-20`}
       >
         <p className={`text-sm text-gray-600`}>
           {"Could not load profile. Please check the username and try again :("}
         </p>
+        <Link
+          to={"/"}
+          className={`bg-[#252525] text-white text-[0.85rem] px-4 py-2 rounded-xl active:scale-95 transition-transform ease-in-out duration-100 flex items-center gap-x-2 group`}
+        >
+          Return
+          <FaArrowRightLong
+            className={`group-hover:translate-x-2 group-active:translate-x-2 transition-transform ease-in-out duration-200`}
+          />
+        </Link>
       </div>
     );
   }
