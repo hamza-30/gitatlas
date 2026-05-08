@@ -52,3 +52,42 @@ export function calculateLanguageUsageData(repoData) {
 
   return { languageUsagePieData, languageUsagePercentage };
 }
+
+export function convertToUpdatedAgoTime(date) {
+  let today = new Date();
+  let repoDate = new Date(date);
+
+  let diffInSeconds = Math.floor((today - repoDate) / 1000);
+
+  const years = Math.floor(diffInSeconds / 31536000);
+  if (years >= 1) {
+    return years > 1 ? `${years} years ago` : `${years} year ago`;
+  }
+
+  const months = Math.floor(diffInSeconds / 2592000);
+  if (months >= 1) {
+    return months > 1 ? `${months} months ago` : `${months} month ago`;
+  }
+
+  const weeks = Math.floor(diffInSeconds / 604800);
+  if (weeks >= 1) {
+    return weeks > 1 ? `${weeks} weeks ago` : `${weeks} week ago`;
+  }
+
+  const days = Math.floor(diffInSeconds / 86400);
+  if (days >= 1) {
+    return days > 1 ? `${days} days ago` : `${days} day ago`;
+  }
+
+  const hours = Math.floor(diffInSeconds / 3600);
+  if (hours >= 1) {
+    return hours > 1 ? `${hours} hours ago` : `${hours} hour ago`;
+  }
+
+  const minutes = Math.floor(diffInSeconds / 60);
+  if (minutes >= 1) {
+    return minutes > 1 ? `${minutes} minutes ago` : `${minutes} minute ago`;
+  }
+
+  return `just now`;
+}
