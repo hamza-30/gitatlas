@@ -217,7 +217,7 @@ function Compare() {
 
       {fetchError && <div>❌ Failed to fetch users' data.</div>}
 
-      <div className={`${loading ? "hidden" : "block"}`}>
+      <div className={`w-full ${loading ? "hidden" : "block"}`}>
         {/* Profile Cards */}
         <div
           className={`w-full h-fit flex flex-col md:flex-row gap-y-2.5 gap-x-2`}
