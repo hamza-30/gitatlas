@@ -85,6 +85,7 @@ function Home() {
               onBlur={() =>
                 setTimeout(() => setShowRecentSearchBox(false), 150)
               }
+              onKeyDown={(e) => e.key == "Enter" && handleSearchClick(username)}
             />
             <AiOutlineCode
               className={`absolute text-2xl left-2 bottom-[0.47rem]`}
