@@ -70,13 +70,13 @@ Built on GitHub's public events API which returns up to 100 events. The chart fi
 ## Screenshots
 
 ### Home
-![Home Page](<img width="1920" height="970" alt="screencapture-gitatlas-web-vercel-app-2026-05-10-19_55_47" src="https://github.com/user-attachments/assets/b9d26a99-27a9-4e8c-a91a-ec713ab75fcf" />)
+<img width="1920" height="970" alt="screencapture-gitatlas-web-vercel-app-2026-05-10-19_55_47" src="https://github.com/user-attachments/assets/b9d26a99-27a9-4e8c-a91a-ec713ab75fcf" />
 
 ### Analyzer
-![Analyzer Page](<img width="1920" height="1657" alt="screencapture-gitatlas-web-vercel-app-analyzer-ry-2026-05-10-19_56_08" src="https://github.com/user-attachments/assets/9a80786e-e36b-4804-ab9c-d71149f11506" />)
+<img width="1920" height="1657" alt="screencapture-gitatlas-web-vercel-app-analyzer-ry-2026-05-10-19_56_08" src="https://github.com/user-attachments/assets/9a80786e-e36b-4804-ab9c-d71149f11506" />
 
 ### Compare
-![Compare Page](<img width="1920" height="2546" alt="screencapture-gitatlas-web-vercel-app-compare-2026-05-10-19_56_32" src="https://github.com/user-attachments/assets/4667f404-490d-412c-9af7-b6736d91b757" />)
+<img width="1920" height="2546" alt="screencapture-gitatlas-web-vercel-app-compare-2026-05-10-19_56_32" src="https://github.com/user-attachments/assets/4667f404-490d-412c-9af7-b6736d91b757" />
 
 ---
 
