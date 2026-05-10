@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AiOutlineCode } from "react-icons/ai";
 import { FiArrowRight } from "react-icons/fi";
-import { useAsyncError, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import RecentSearch from "../components/RecentSearch";
 import { useSearchContext } from "../context/SearchContextProvider";
 

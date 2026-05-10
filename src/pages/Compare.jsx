@@ -11,7 +11,7 @@ import { LuChartPie } from "react-icons/lu";
 import LanguagePieChart from "../components/LanguagePieChart";
 import { GoFileDirectory } from "react-icons/go";
 import RepoCard from "../components/RepoCard";
-import { convertToUpdatedAgoTime } from "../utils/githubUtils";
+import { convertToUpdatedAgoTime, languageColors } from "../utils/githubUtils";
 
 function decideWinner(val1, val2) {
   if (val1 > val2) {
@@ -32,31 +32,6 @@ function Compare() {
   const [user2RepoData, setUser2RepoData] = useState([]);
   const [fetchError, setFetchError] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const languageColors = {
-    JavaScript: "#f1e05a",
-    TypeScript: "#3178c6",
-    Python: "#3572A5",
-    Java: "#b07219",
-    C: "#555555",
-    "C++": "#f34b7d",
-    "C#": "#178600",
-    Go: "#00ADD8",
-
-    Rust: "#dea584",
-    Ruby: "#701516",
-    PHP: "#4F5D95",
-    Swift: "#ffac45",
-    Kotlin: "#A97BFF",
-    Dart: "#00B4AB",
-
-    HTML: "#e34c26",
-    CSS: "#563d7c",
-    SCSS: "#c6538c",
-
-    Shell: "#89e051",
-    Dockerfile: "#384d54",
-  };
 
   function onCompareClick() {
     if (user1 && user2) {
